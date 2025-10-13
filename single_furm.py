@@ -1,3 +1,4 @@
+import operations
 import utils
 import item_conf
 
@@ -30,7 +31,7 @@ def main_loop():
 				plant(FURM_ITEM)
 			
 			if is_need_water:
-				utils.use_water_if_dry()
+				operations.use_water_if_dry()
 				
 			move(North)
 		

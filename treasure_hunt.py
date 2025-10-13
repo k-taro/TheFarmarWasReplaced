@@ -1,3 +1,4 @@
+import collections
 import utils
 
 turn_dir = [North, West, East, South]
@@ -84,7 +85,7 @@ def treasure_hunt():
 			
 			dir_diff.append(diff)
 
-		for dir_idx in utils.sorted_index(dir_diff):
+		for dir_idx in collections.sorted_index(dir_diff):
 			dir_priority.append(turn_dir[dir_idx])
 		
 		for dir in dir_priority:

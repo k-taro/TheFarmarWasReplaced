@@ -1,5 +1,5 @@
-import utils
-utils.move_zero_point()
+import moves
+moves.move_zero_point()
 
 
 for pos_x in range(get_world_size()):

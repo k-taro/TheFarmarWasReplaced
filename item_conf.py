@@ -1,4 +1,4 @@
-import utils
+import collections
 
 need_water_items = [
 	Entities.Carrot, 
@@ -14,7 +14,7 @@ need_till_items = [
 	]
 	
 def is_need_water(item):
-	return utils.is_conntain(need_water_items, item)
+	return collections.is_conntain(need_water_items, item)
 	
 def is_need_till(item):
-	return utils.is_conntain(need_till_items, item)
+	return collections.is_conntain(need_till_items, item)

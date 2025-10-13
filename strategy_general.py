@@ -1,3 +1,4 @@
+import operations
 import utils
 
 def flower_shop():
@@ -7,7 +8,7 @@ def flower_shop():
 		elif get_entity_type() != Entities.Sunflower:
 			plant(Entities.Sunflower)
 			
-		utils.use_water_if_dry()
+		operations.use_water_if_dry()
 		
 		for i in range(3):
 			do_a_flip()
@@ -47,14 +48,14 @@ def main_loop():
 				if (pos_x >= 3 and pos_y < 3):
 					if get_entity_type() != Entities.Carrot:
 						plant(Entities.Carrot)
-					utils.use_water_if_dry()
+					operations.use_water_if_dry()
 					
 				elif pos_y == 4 or pos_y == 6:
 					if (get_pos_x() % 2) != 1:
 						if get_entity_type() != Entities.Tree:
 							plant(Entities.Tree)
 							use_item(Items.Fertilizer)
-						utils.use_water_if_dry()
+						operations.use_water_if_dry()
 					else:
 						if get_entity_type() != Entities.Bush:
 							plant(Entities.Bush)
@@ -64,12 +65,12 @@ def main_loop():
 						plant(Entities.Pumpkin)
 						is_all_pumpkin = False
 						
-					utils.use_water_if_dry()
+					operations.use_water_if_dry()
 				
 				elif (pos_x == get_world_size()-1 and pos_y == get_world_size()-1):
 					if get_entity_type() != Entities.Sunflower:
 						plant(Entities.Sunflower)
-					utils.use_water_if_dry()
+					operations.use_water_if_dry()
 					
 				move(North)			
 							
