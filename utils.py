@@ -1,21 +1,26 @@
 dir_opposite = {
-	North:South,
-	West:East,
-	South:North,
-	East:West}
-	
+    North:South,
+    West:East,
+    South:North,
+    East:West}
+    
 def get_full_unlock_dict():
-	unlock_dict = {}
-	for ul in Unlocks:
-		unlock_dict[ul] = 100
+    unlock_dict = {}
+    for ul in Unlocks:
+        unlock_dict[ul] = 100
 
-	return unlock_dict
+    return unlock_dict
 
 def get_full_item_dict():
-	item_dict = {}
-	for it in Items:
-		item_dict[it] = 65535
+    item_dict = {}
+    for it in Items:
+        item_dict[it] = 65535
 
-	return item_dict
+    return item_dict
 
-		
+def calc_manhattan_dist(pos1, pos2):
+    diff = 0
+    diff = abs(pos1[0] - pos2[0])
+    diff = diff + abs(pos1[1] - pos2[1])
+    
+        

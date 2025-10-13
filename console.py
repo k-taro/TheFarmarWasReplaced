@@ -1,8 +1,11 @@
-import utils
+import moves
 
-unlock_dist = utils.get_full_unlock_dict()
-full_item_dict = utils.get_full_item_dict()
+moves.move_to(0, 0)
 
-unlock_dist[Unlocks.Expand] = 5	
+do_a_flip()
 
-run_time = simulate("strategy_general", unlock_dist, full_item_dict, {}, 1, 64)
+moves.move_to(2, 5)
+
+do_a_flip()
+
+moves.move_to(2, 0)
