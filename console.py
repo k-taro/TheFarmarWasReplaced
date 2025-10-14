@@ -1,11 +1,11 @@
 import moves
+import operations
 
-moves.move_to(0, 0)
+def wrap_flip(context):
+    do_a_flip()
+    
+    return context
 
-do_a_flip()
+moves.move_zero_point()
+operations.do_in_area(wrap_flip, 3, 3, {})
 
-moves.move_to(2, 5)
-
-do_a_flip()
-
-moves.move_to(2, 0)

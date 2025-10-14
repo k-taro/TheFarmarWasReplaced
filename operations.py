@@ -17,11 +17,15 @@ def do_in_area(g, width, height, context):
     for x in range(abs(width)):
         for y in range(abs(height)-1):
             context = g(context)
-            move(dir_y)
+            if x % 2 == 0:
+                move(dir_y)
+            else:
+                move(utils.dir_opposite[dir_y])
 
         context = g(context)
-        move(dir_x)
-        for y in range(abs(height)-1):
-            move(utils.dir_opposite[dir_y])
+        if x < width-1:
+            move(dir_x)
+            # for y in range(abs(height)-1):
+            #     move(utils.dir_opposite[dir_y])
 
     return context

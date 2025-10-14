@@ -11,6 +11,7 @@ need_till_items = [
     Entities.Carrot, 
     Entities.Pumpkin, 
     Entities.Sunflower,
+    Entities.Cactus,
     ]
     
 def is_need_water(item):

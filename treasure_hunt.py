@@ -113,7 +113,7 @@ def main_loop():
 def spawn_drone_function():
     change_hat(Hats.Gray_Hat)
     
-    for i in range(6):
+    while get_entity_type() != Entities.Hedge:
         do_a_flip()
     
     maze_strategy_init()            
@@ -122,25 +122,18 @@ def spawn_drone_function():
 def init():
     clear()
     
-    moves.move_zero_point()
-    
-    for pos_x in range(get_world_size()):
-        for pos_y in range(get_world_size()):
-            plant(Entities.Bush)
-            move(North)
-    
-        move(East)
-    
+    moves.move_to(0, 0)
+        
     move(South)
+    spawn_drone(spawn_drone_function)
     move(West)
-    
+    spawn_drone(spawn_drone_function)
+    move(North)
     spawn_drone(spawn_drone_function)
     
-    moves.move_zero_point()
-    
-    for i in range(5):
-        do_a_flip()
-    
+    moves.move_to(0, 0)
+        
+    plant(Entities.Bush)    
     substance = get_world_size() * 2**(num_unlocked(Unlocks.Mazes) - 1)
     use_item(Items.Weird_Substance, substance)
             
