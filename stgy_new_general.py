@@ -1,28 +1,18 @@
+import farm_strategies
+from farm_strategies import harvest_cactus, harvest_if_can, harvest_pumpkin, preparation
 import operations
 import utils
-import item_conf
 import moves
+from utils import nop
 
 AREA_CONF = [
-    {Entities:Entities.Pumpkin, "pos":[0,0,3,3]},
-    {Entities:Entities.Carrot, "pos":[3,0,5,3]},
-    {Entities:Entities.Cactus, "pos":[0,3,3,3]},
-    {Entities:Entities.Tree, "pos":[3,3,5,3]},
-    {Entities:Entities.Grass, "pos":[0,6,7,2]},
-    {Entities:Entities.Sunflower, "pos":[7,7,1,1]},
+    {Entities:Entities.Pumpkin, "pos":[0,0,4,4]},
+    {Entities:Entities.Carrot, "pos":[4,0,8,4]},
+    {Entities:Entities.Cactus, "pos":[0,4,4,4]},
+    {Entities:Entities.Tree, "pos":[4,4,8,4]},
+    {Entities:Entities.Grass, "pos":[0,8,12,3]},
+    {Entities:Entities.Sunflower, "pos":[0,11,12,1]},
 ]
-
-def flower_shop():
-    while True:
-        if can_harvest():
-            harvest()
-        elif get_entity_type() != Entities.Sunflower:
-            plant(Entities.Sunflower)
-            
-        operations.use_water_if_dry()
-        
-        for i in range(3):
-            do_a_flip()
 
 def wrap_preparation(context):
 
@@ -30,138 +20,67 @@ def wrap_preparation(context):
 
     return context
 
-def preparation(ent):
-    
-    if (item_conf.is_need_till(ent)) == (get_ground_type() == Grounds.Grassland):
-        till()
-        
-    if ent == Entities.Tree:
-        if (get_pos_x() % 2) == (get_pos_y() % 2):
-            plant(Entities.Tree)
-            use_item(Items.Fertilizer)
-        else:
-            plant(Entities.Bush)
-
-    elif ent != Entities.Grass:
-        plant(ent)
-
-def sort_cactus(w, h):
-    while True:
-        is_sorted = True
-
-        for x_idx in range(w):
-            for y_idx in range(h):
-                cur_size = measure(None)
-                south_size = measure(South)
-                west_size = measure(West)
-
-                if y_idx != 0:
-                    if cur_size < south_size:
-                        is_sorted = False
-                        swap(South)
-                        south_size = cur_size
-                        cur_size = measure(None)
-
-                if x_idx != 0:
-                    if cur_size < west_size:
-                        is_sorted = False
-                        swap(West)
-
-                move(North)
-
-            move(East)
-            for y_idx in range(h):
-                move(South)
-
-        for x_idx in range(w):
-            move(West)
-
-        if is_sorted:
-            break
-
-def harvest_cactus(context):
-    x, y, w, h = context["pos"]
-
-    if get_entity_type() != Entities.Cactus:
-        preparation(Entities.Cactus)
-
-    if not can_harvest():
-        context["is_all_cactus"] = False
-
-    elif (get_pos_x() == x + w - 1) and (get_pos_y() == y + h - 1):
-        if context["is_all_cactus"]:
-            moves.move_to(x,y)
-            sort_cactus(w, h)
-            harvest()
-
-    if item_conf.is_need_water(Entities.Cactus):
-        operations.use_water_if_dry()
-
-    return context
-   
-
-def harvest_pumpkin(context):
-    x, y, w, h = context["pos"]
-
-    if get_entity_type() != Entities.Pumpkin:
-        preparation(Entities.Pumpkin)
-
-    if not can_harvest():
-        context["is_all_pumpkin"] = False
-
-    elif (get_pos_x() == x + w - 1) and (get_pos_y() == y + h - 1):
-        if context["is_all_pumpkin"]:
-            harvest()
-
-    if item_conf.is_need_water(Entities.Pumpkin):
-        operations.use_water_if_dry()
-
-    return context
-
-def harvest_if_can(context):
-    ent = context[Entities]
-
-    if can_harvest():
-        harvest()
-
-    if get_entity_type() != ent:
-        preparation(ent)
-
-    if item_conf.is_need_water(ent):
-        operations.use_water_if_dry()
-
-    return context
-
-def nop():
-    return None
-
 def wrap_main_loop():
-    main_loop(do_a_flip)
+    main_loop(nop)
 
 def main_loop(g):
-    while True:
-        for conf in AREA_CONF:
-            ent = conf[Entities]
-            x,y,w,h = conf["pos"]
+    cactus_ctxt = {
+            "pos":[0, 0, 0, 0], 
+            farm_strategies.KEY_COUNT_CAN_HARVEST:True,
+            farm_strategies.KEY_IS_NO_SORT:True,
+        }
 
-            moves.move_to(x,y)
+#    while True:
+    for conf in AREA_CONF:
+        ent = conf[Entities]
+        x,y,w,h = conf["pos"]
 
-            if ent == Entities.Pumpkin:
-                operations.do_in_area(harvest_pumpkin, w, h, {"pos":conf["pos"], "is_all_pumpkin":True})
-            
-            elif ent == Entities.Cactus:
-                operations.do_in_area(harvest_cactus, w, h, {"pos":conf["pos"], "is_all_cactus":True})
+        moves.move_to(x,y)
 
-            else:
-                operations.do_in_area(harvest_if_can, w, h, {Entities:ent})
+        if ent == Entities.Pumpkin:
+            operations.do_in_area(harvest_pumpkin, w, h, {"pos":conf["pos"], farm_strategies.KEY_COUNT_CAN_HARVEST:0})
+        
+        elif ent == Entities.Cactus:
+            cactus_ctxt["pos"] = conf["pos"]
+            operations.do_in_area(harvest_cactus, w, h, cactus_ctxt)
 
-        g()
+        elif ent == Entities.Sunflower:
+            operations.do_in_area(farm_strategies.harvest_sunflower, w, h, {"pos":conf["pos"]})
+
+        else:
+            operations.do_in_area(harvest_if_can, w, h, {Entities:ent})
+
+    g()
 
             
 if __name__ == "__main__":
-#    spawn_drone(wrap_main_loop)
+    # spawn_drone(wrap_main_loop)
 
-    for i in range(3):
-        do_a_flip()
+    # for i in range(3):
+    #     do_a_flip()
 
-    main_loop(nop)
+    # main_loop(nop)
+
+    drone_handler = spawn_drone(wrap_main_loop)
+    start_tick = get_tick_count()
+    wait_for(drone_handler)
+    end_tick = get_tick_count()
+
+    diff_tick = end_tick - start_tick
+
+    while True:
+        first_drone_handler = spawn_drone(wrap_main_loop)
+        first_drone_tick = get_tick_count()
+        start_tick = first_drone_tick
+
+        for _ in range(max_drones() - 2):
+            while (get_tick_count() - start_tick) < (diff_tick / (max_drones()-1)):
+                pass
+
+            spawn_drone(wrap_main_loop)
+            start_tick = get_tick_count()
+
+        wait_for(first_drone_handler)
+
+        diff_tick = get_tick_count() - first_drone_tick
+

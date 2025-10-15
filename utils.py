@@ -22,5 +22,7 @@ def calc_manhattan_dist(pos1, pos2):
     diff = 0
     diff = abs(pos1[0] - pos2[0])
     diff = diff + abs(pos1[1] - pos2[1])
-    
+
+def nop():
+    return None
         
