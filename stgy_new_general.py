@@ -6,12 +6,12 @@ import moves
 from utils import nop
 
 AREA_CONF = [
-    {Entities:Entities.Pumpkin, "pos":[0,0,4,4]},
-    {Entities:Entities.Carrot, "pos":[4,0,8,4]},
-    {Entities:Entities.Cactus, "pos":[0,4,4,4]},
-    {Entities:Entities.Tree, "pos":[4,4,8,4]},
-    {Entities:Entities.Grass, "pos":[0,8,12,3]},
-    {Entities:Entities.Sunflower, "pos":[0,11,12,1]},
+    {Entities:Entities.Pumpkin, "pos":[0,0,5,5]},
+    {Entities:Entities.Carrot, "pos":[5,0,6,5]},
+    {Entities:Entities.Cactus, "pos":[0,5,5,5]},
+    {Entities:Entities.Tree, "pos":[5,5,6,5]},
+    {Entities:Entities.Grass, "pos":[0,10,11,2]},
+    {Entities:Entities.Sunflower, "pos":[11,11,1,-12]},
 ]
 
 def wrap_preparation(context):
@@ -42,7 +42,7 @@ def main_loop(g):
         
         elif ent == Entities.Cactus:
             cactus_ctxt["pos"] = conf["pos"]
-            operations.do_in_area(harvest_cactus, w, h, cactus_ctxt)
+            operations.do_in_area(harvest_cactus, w, h, cactus_ctxt, operations.ORDER_COLUMN_MAJOR)
 
         elif ent == Entities.Sunflower:
             operations.do_in_area(farm_strategies.harvest_sunflower, w, h, {"pos":conf["pos"]})
