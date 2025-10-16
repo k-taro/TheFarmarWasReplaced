@@ -4,6 +4,7 @@ import operations
 
 KEY_COUNT_CAN_HARVEST = "KEY_COUNT_CAN_HARVEST"
 KEY_IS_NO_SORT = "KEY_IS_NO_SORT"
+KEY_POS = "KEY_POS"
 
 def preparation(ent):
     if (item_conf.is_need_till(ent)) == (get_ground_type() == Grounds.Grassland):
@@ -76,7 +77,8 @@ def sort_south_west(o_x, o_y):
     return is_sorted
 
 def harvest_sunflower(context):
-    x, y, w, h = context["pos"]
+    x, y, w, h = context["KEY_POS"]
+    flower_info = context["flower_info"]
 
     if get_entity_type() != Entities.Sunflower:
         preparation(Entities.Sunflower)
@@ -90,7 +92,7 @@ def harvest_sunflower(context):
     return context
 
 def harvest_cactus(context):
-    x, y, w, h = context["pos"]
+    x, y, w, h = context["KEY_POS"]
 
     if get_pos_x() == x and get_pos_y() == y:
         context[KEY_IS_NO_SORT] = True
@@ -112,7 +114,7 @@ def harvest_cactus(context):
     return context
 
 def harvest_pumpkin(context):
-    x, y, w, h = context["pos"]
+    x, y, w, h = context["KEY_POS"]
 
     if get_entity_type() != Entities.Pumpkin:
         preparation(Entities.Pumpkin)
