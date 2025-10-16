@@ -1,10 +1,13 @@
 import item_conf
 import moves
 import operations
+import utils
+import flower_info
 
 KEY_COUNT_CAN_HARVEST = "KEY_COUNT_CAN_HARVEST"
 KEY_IS_NO_SORT = "KEY_IS_NO_SORT"
-KEY_POS = KEY_POS
+KEY_POS = "KEY_POS"
+KEY_FLOWER_INFO = "KEY_FLOWER_INFO"
 
 def preparation(ent):
     if (item_conf.is_need_till(ent)) == (get_ground_type() == Grounds.Grassland):
@@ -76,20 +79,77 @@ def sort_south_west(o_x, o_y):
 
     return is_sorted
 
-def harvest_sunflower(context):
+def harvest_sunflower_mod(context):
     x, y, w, h = context[KEY_POS]
-    flower_info = context["flower_info"]
+    flower_info_list = []
 
-    if get_entity_type() != Entities.Sunflower:
-        preparation(Entities.Sunflower)
+    dir_x = East
+    dir_y = North
 
-    if can_harvest():
-        harvest()
-        # sort_south_west(x, y)
-        # if (get_pos_x() == x + w - 1) and (get_pos_y() == y + h - 1):
-        #     harvest()
+    if w < 0:
+        dir_x = West
+    
+    if h < 0:
+        dir_y = South
 
-    return context
+    for x_idx in range(abs(w)):
+        for _ in range(abs(h)-1):
+            if get_entity_type() != Entities.Sunflower:
+                preparation(Entities.Sunflower)
+            
+            while not can_harvest():
+                pass
+
+            flower_info_list.append(
+                {
+                    flower_info.KEY_MEASURE:measure(),
+                    flower_info.KEY_POS:[get_pos_x(), get_pos_y()]
+                }
+            )
+            if (x_idx % 2 == 1):
+                move(utils.dir_opposite[dir_y])
+            else:
+                move(dir_y)
+
+        if x_idx < w-1:
+            move(dir_x)
+
+
+    m_idx = utils.max_index(flower_info_list, flower_info.comp_flower)
+    target_x, target_y = flower_info_list.pop(m_idx)[flower_info.KEY_POS]
+
+    moves.move_to(target_x, target_y)
+    harvest()
+    preparation(Entities.Sunflower)
+
+
+# def harvest_sunflower(context):
+#     x, y, w, h = context[KEY_POS]
+#     flower_info_list = context[KEY_FLOWER_INFO]
+    
+#     m_idx = utils.max_index(flower_info_list, flower_info.comp_flower)
+#     target_x, target_y = flower_info_list.pop(m_idx)[flower_info.KEY_POS]
+
+#     moves.move_to(target_x, target_y)
+
+#     if get_entity_type() != Entities.Sunflower:
+#         preparation(Entities.Sunflower)
+
+#     elif can_harvest():
+#         harvest()
+#         preparation(Entities.Sunflower)
+        
+#         while can_harvest():
+#             pass
+    
+#         flower_info_list.append(
+#             {
+#                 flower_info.KEY_MEASURE:measure(),
+#                 flower_info.KEY_POS:[target_x, target_y]
+#             }
+#         )
+    
+#     return context
 
 def harvest_cactus(context):
     x, y, w, h = context[KEY_POS]

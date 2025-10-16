@@ -1,11 +1,5 @@
 import moves
 import operations
+import farm_strategies
 
-def wrap_flip(context):
-    do_a_flip()
-    
-    return context
-
-moves.move_zero_point()
-operations.do_in_area(wrap_flip, 3, 3, {})
-
+farm_strategies.harvest_sunflower_mod({farm_strategies.KEY_POS:[11, 0, 1, 12]})

@@ -1,5 +1,5 @@
 import farm_strategies
-from farm_strategies import harvest_cactus, harvest_if_can, harvest_pumpkin, preparation
+from farm_strategies import harvest_cactus, harvest_if_can, harvest_pumpkin, preparation, KEY_POS
 import operations
 import utils
 import moves
@@ -44,8 +44,11 @@ def main_loop(g):
             cactus_ctxt[KEY_POS] = conf[KEY_POS]
             operations.do_in_area(harvest_cactus, w, h, cactus_ctxt, operations.ORDER_COLUMN_MAJOR)
 
-        elif ent == Entities.Sunflower:
-            operations.do_in_area(farm_strategies.harvest_sunflower, w, h, {KEY_POS:conf[KEY_POS]})
+        # elif ent == Entities.Sunflower:
+        #     pos = conf[KEY_POS]
+        #     moves.move_to(pos[0], pos[1])
+        #     farm_strategies.harvest_sunflower_mod({KEY_POS:pos})
+        #     operations.do_in_area(farm_strategies.harvest_sunflower_mod, w, h, {KEY_POS:conf[KEY_POS]})
 
         else:
             operations.do_in_area(harvest_if_can, w, h, {Entities:ent})
@@ -61,12 +64,11 @@ if __name__ == "__main__":
 
     # main_loop(nop)
 
-    drone_handler = spawn_drone(wrap_main_loop)
-    start_tick = get_tick_count()
-    wait_for(drone_handler)
-    end_tick = get_tick_count()
+    # while True:
+    #     farm_strategies.harvest_sunflower_mod({farm_strategies.KEY_POS:[11, 0, 1, 12]})
+    #     spawn_drone(wrap_main_loop)
 
-    diff_tick = end_tick - start_tick
+    diff_tick = 50000
 
     while True:
         first_drone_handler = spawn_drone(wrap_main_loop)

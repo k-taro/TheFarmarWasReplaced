@@ -25,4 +25,15 @@ def calc_manhattan_dist(pos1, pos2):
 
 def nop():
     return None
-        
+
+# comp は比較関数 a, bを比較し、aが小さければマイナスを返す
+# comp(a, b):
+#     return a - b
+#
+def max_index(l, comp):
+    max_index = 0
+    for i in range(len(l)):
+        if comp(l[i], l[max_index]) > 0:
+            max_index = i
+
+    return max_index
