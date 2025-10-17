@@ -93,8 +93,8 @@ def treasure_hunt(x, y, w, h):
         dist_list[index_x] = []
         edge_list[index_x] = []
         for index_y in range(h+2):
-            dist_list[index_x].add(MAX_DIST)
-            edge_list[index_x].add([False, False, False, False])
+            dist_list[index_x].append(MAX_DIST)
+            edge_list[index_x].append([False, False, False, False])
 
     now_dist = 0
 
