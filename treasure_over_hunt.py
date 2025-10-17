@@ -78,8 +78,8 @@ def get_trace(dist_list, start_pos, is_opp = False):
 def treasure_hunt(x, y, w, h):
     MAX_DIST = 10000
 
-    dist_list = [[]]
-    edge_list = [[]]
+    dist_list = []
+    edge_list = []
 
     dir2index = {
         North:0,
@@ -90,8 +90,8 @@ def treasure_hunt(x, y, w, h):
 
     # 初期化
     for index_x in range(w+2):
-        dist_list[index_x] = []
-        edge_list[index_x] = []
+        dist_list.append([])
+        edge_list.append([])
         for index_y in range(h+2):
             dist_list[index_x].append(MAX_DIST)
             edge_list[index_x].append([False, False, False, False])
