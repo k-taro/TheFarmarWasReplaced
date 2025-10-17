@@ -7,6 +7,13 @@ Directions = {
     East,
 }
 
+dir2index = {
+    North:0,
+    West:1,
+    South:2,
+    East:3,
+}
+
 turn_right = {
     North:West,
     West:South,
@@ -29,7 +36,7 @@ def turn_right(dir):
         East:North,
     }
 
-    return collections.get_with(dir_table, dir, None)
+    return collections.get_with_default(dir_table, dir, None)
 
 def turn_left(dir):
     dir_table = {
@@ -39,7 +46,7 @@ def turn_left(dir):
         East:North,
     }
 
-    return collections.get_with(dir_table, dir, None)
+    return collections.get_with_default(dir_table, dir, None)
 
 def turn_back(dir):
     dir_table = {
@@ -49,4 +56,4 @@ def turn_back(dir):
         East:West
     }
 
-    return collections.get_with(dir_table, dir, None)
+    return collections.get_with_default(dir_table, dir, None)

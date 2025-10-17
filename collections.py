@@ -18,7 +18,7 @@ def sorted_index(data):
     return index
 
 
-def get_with_defalt(dict, key, defalt):
+def get_with_default(dict, key, defalt):
     if not (key in dict):
         return defalt
     else:
