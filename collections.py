@@ -16,3 +16,10 @@ def sorted_index(data):
                 index[j], index[j+1] = index[j+1], index[j] #前後入れ替え
 
     return index
+
+
+def get_with_defalt(dict, key, defalt):
+    if not (key in dict):
+        return defalt
+    else:
+        return dict[key]
