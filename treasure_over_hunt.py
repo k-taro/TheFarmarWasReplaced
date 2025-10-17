@@ -136,7 +136,7 @@ def treasure_hunt(x, y, w, h):
 
 
 def main_loop():
-    treasure_hunt()
+    treasure_hunt(0, 0, get_world_size(), get_world_size())
     
 def init():
     clear()
