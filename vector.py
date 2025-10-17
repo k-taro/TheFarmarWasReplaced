@@ -1,5 +1,7 @@
-KEY_X = "X"
-KEY_Y = "Y"
+# 座標を表すクラスっぽい何か
+
+KEY_X = 0
+KEY_Y = 1
 
 def create_vector(x, y):
     return {KEY_X:x, KEY_Y:y}

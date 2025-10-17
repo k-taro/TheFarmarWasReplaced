@@ -66,14 +66,14 @@ def sort_south_west(o_x, o_y):
     west_size = measure(West)
 
     if get_pos_y() != o_y:
-        if cur_size < south_size:
+        if (south_size != None) and (cur_size < south_size):
             is_sorted = False
             swap(South)
             south_size = cur_size
             cur_size = measure(None)
 
     if get_pos_x() != o_x:
-        if cur_size < west_size:
+        if (west_size != None) and (cur_size < west_size):
             is_sorted = False
             swap(West)
 

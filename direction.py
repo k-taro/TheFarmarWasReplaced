@@ -1,5 +1,12 @@
 import collections
 
+Directions = {
+    North,
+    West,
+    South,
+    East,
+}
+
 turn_right = {
     North:West,
     West:South,
