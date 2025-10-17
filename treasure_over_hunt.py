@@ -90,6 +90,8 @@ def treasure_hunt(x, y, w, h):
 
     # 初期化
     for index_x in range(w+2):
+        dist_list[index_x] = []
+        edge_list[index_x] = []
         for index_y in range(h+2):
             dist_list[index_x][index_y] = MAX_DIST
             edge_list[index_x][index_y] = [False, False, False, False]
