@@ -17,6 +17,26 @@ def move_center():
     while (get_pos_y() < (get_world_size() / 2)):
         move(North)
 
+def move_to_without_warp(x, y):
+    now_pos = [get_pos_x(), get_pos_y()]
+    target = [x, y]
+
+    dir_x = East
+    dir_y = North
+
+    if (target[0] - now_pos[0]) < 0:
+        dir_x = West
+
+    if (target[1] - now_pos[1]) < 0:
+        dir_y = South
+
+    while target[0] != get_pos_x():
+        move(dir_x)
+
+    while target[1] != get_pos_y():
+        move(dir_y)
+
+
 def move_to(x, y):
     now_pos = [get_pos_x(), get_pos_y()]
     target = [x, y]
