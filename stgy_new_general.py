@@ -6,12 +6,16 @@ import moves
 from utils import nop
 
 AREA_CONF = [
-    {Entities:Entities.Pumpkin, KEY_POS:[0,0,5,5]},
-    {Entities:Entities.Carrot, KEY_POS:[5,0,6,5]},
-    {Entities:Entities.Cactus, KEY_POS:[0,5,5,5]},
-    {Entities:Entities.Tree, KEY_POS:[5,5,6,5]},
-    {Entities:Entities.Grass, KEY_POS:[0,10,11,2]},
-    {Entities:Entities.Sunflower, KEY_POS:[11,11,1,-12]},
+    {Entities:Entities.Pumpkin, KEY_POS:[0,0,6,6]},
+    {Entities:Entities.Cactus, KEY_POS:[6,0,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[12,0,6,6]},
+    {Entities:Entities.Cactus, KEY_POS:[0,6,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[6,6,6,6]},
+    {Entities:Entities.Cactus, KEY_POS:[12,6,6,6]},
+    {Entities:Entities.Carrot, KEY_POS:[0,12,18,5]},
+    {Entities:Entities.Tree, KEY_POS:[0,17,18,5]},
+    {Entities:Entities.Grass, KEY_POS:[18,0,4,17]},
+    {Entities:Entities.Sunflower, KEY_POS:[18,17,4,5]},
 ]
 
 def wrap_preparation(context):
@@ -68,7 +72,7 @@ if __name__ == "__main__":
     #     farm_strategies.harvest_sunflower_mod({farm_strategies.KEY_POS:[11, 0, 1, 12]})
     #     spawn_drone(wrap_main_loop)
 
-    diff_tick = 50000
+    diff_tick = 60000
 
     while True:
         first_drone_handler = spawn_drone(wrap_main_loop)

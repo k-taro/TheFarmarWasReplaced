@@ -94,6 +94,7 @@ def treasure_hunt(x, y, w, h):
 
     now_dist = 0
 
+    # マップ作り
     while True:
         now_pos = vector.create_vector(get_pos_x() + 1, get_pos_y() + 1)
 
@@ -133,13 +134,34 @@ def treasure_hunt(x, y, w, h):
         t_x, t_y = measure()
         treasure_pos = vector.create_vector(t_x + 1, t_y + 1) # 宝箱の位置から探索
 
-        tmp_trace = get_trace(dist_list, edge_list, treasure_pos, True)
-        for t in tmp_trace:
-            trace.append(t)
+        treasure_trace = get_trace(dist_list, edge_list, treasure_pos)
+        drone_trace = get_trace(dist_list, edge_list, vector.create_vector(get_pos_x()+1,get_pos_y()+1))
 
-        tmp_trace = get_trace(dist_list, edge_list, vector.create_vector(get_pos_x()+1,get_pos_y()+1))
-        for i in range(len(tmp_trace)):
-            trace.append(tmp_trace[len(tmp_trace)-i-1])
+        lca_dist = 0
+
+        while True:
+            if lca_dist >= len(treasure_trace):
+                lca_dist = len(treasure_trace)
+                break
+
+            elif lca_dist >= len(drone_trace):
+                lca_dist = len(drone_trace)
+                break
+            
+            elif (treasure_trace[len(treasure_trace)-1-lca_dist] != drone_trace[len(drone_trace)-1-lca_dist]):
+                break
+
+            lca_dist += 1
+
+        trace_index = 0
+        while trace_index < len(treasure_trace) - lca_dist:
+            trace.append(direction.turn_back(treasure_trace[trace_index]))
+            trace_index += 1
+
+        trace_index = 0
+        while trace_index < len(drone_trace) - lca_dist:
+            trace.append(drone_trace[len(drone_trace) - 1 - (lca_dist + trace_index)])
+            trace_index += 1
 
         while len(trace) > 0:
             dir = trace.pop()
@@ -149,6 +171,7 @@ def treasure_hunt(x, y, w, h):
             use_item(Items.Weird_Substance, substance)
         else:
             harvest()
+            break
     
 
 def main_loop():

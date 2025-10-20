@@ -3,7 +3,7 @@ import utils
 import moves
 import item_conf
 
-FURM_ITEM = Entities.Pumpkin
+FURM_ITEM = Entities.Sunflower
 
 def init():
     clear()
