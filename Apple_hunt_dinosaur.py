@@ -9,7 +9,7 @@ def zigzag_move(pos_apple):
     global tail_count
     ret = vector.create_vector(pos_apple[0], pos_apple[1])
 
-    while get_pos_x() < get_world_size()-1:
+    for _ in range(get_pos_x(), get_world_size()):
         dir = North
         y_diff = get_world_size() - 1 - get_pos_y()
         if get_pos_x() % 2 == 1:
@@ -35,6 +35,8 @@ def zigzag_move(pos_apple):
             if(get_entity_type() == Entities.Apple):
                 ret[0], ret[1] = measure()
                 tail_count += 1
+        else:
+            break
 
     return ret
 
@@ -118,26 +120,27 @@ def go_to_apple(pos_apple):
             get_world_size() - 1
         )
     
-    if get_pos_x() >= zigzag_start_pos[0]-1:
-        for _ in range(get_pos_x()-zigzag_start_pos[0]+2):
-            if not move(West):
-                return None
+    pos_apple = move_to_without_warp(pos_apple[0], pos_apple[1], pos_apple, True)
+#     if get_pos_x() >= zigzag_start_pos[0]-1:
+#         for _ in range(get_pos_x()-zigzag_start_pos[0]+2):
+#             if not move(West):
+#                 return None
             
-        if not move(North):
-            return None
-        if get_entity_type() == Entities.Apple:
-            pos_apple[0], pos_apple[1] = measure()
-            tail_count += 1
+#         if not move(North):
+#             return None
+#         if get_entity_type() == Entities.Apple:
+#             pos_apple[0], pos_apple[1] = measure()
+#             tail_count += 1
 
-        pos_apple = zigzag_move(pos_apple)
+# #        pos_apple = zigzag_move(pos_apple)
 
-    else:
-        pos_apple = move_to_without_warp(pos_apple[0], pos_apple[1], pos_apple, True)
-        zigzag_lane = tail_count // (get_world_size() - 1) + 1
+#     else:
+#         pos_apple = move_to_without_warp(pos_apple[0], pos_apple[1], pos_apple, True)
+#         # zigzag_lane = tail_count // (get_world_size() - 1) + 1
 
-        while (get_pos_x() < pos_apple[0]) and (pos_apple[0] < (get_world_size() - zigzag_lane - 3)):
-            pos_apple = move_to_without_warp(pos_apple[0], pos_apple[1], pos_apple, True)
-            zigzag_lane = tail_count // (get_world_size() - 1) + 1
+#         # while (get_pos_x() < pos_apple[0]) and (pos_apple[0] < (get_world_size() - zigzag_lane - 3)):
+#         #     pos_apple = move_to_without_warp(pos_apple[0], pos_apple[1], pos_apple, True)
+#         #     zigzag_lane = tail_count // (get_world_size() - 1) + 1
 
     return pos_apple
 
