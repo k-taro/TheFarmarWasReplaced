@@ -30,11 +30,18 @@ def move_to_without_warp(x, y):
     if (target[1] - now_pos[1]) < 0:
         dir_y = South
 
+    ret = True
     while target[0] != get_pos_x():
-        move(dir_x)
+        if not move(dir_x):
+            ret = False
+            break
 
     while target[1] != get_pos_y():
-        move(dir_y)
+        if not move(dir_y):
+            ret = False
+            break
+    
+    return ret
 
 
 def move_to(x, y):
@@ -68,8 +75,15 @@ def move_to(x, y):
     if diff_y_list[y_idx[0]] < 0:
         dir_y = South
 
+    ret = True
     while target[0] != get_pos_x():
-        move(dir_x)
+        if not move(dir_x):
+            ret = False
+            break
 
     while target[1] != get_pos_y():
-        move(dir_y)
+        if not move(dir_y):
+            ret = False
+            break
+
+    return ret
