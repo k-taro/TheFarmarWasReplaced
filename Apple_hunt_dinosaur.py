@@ -5,6 +5,16 @@ import vector
 
 tail_count = 0
 
+def check_apple(pos_apple):
+    global tail_count
+    ret = vector.create_vector(pos_apple[0], pos_apple[1])
+
+    if get_entity_type() == Entities.Apple:
+        ret[0], ret[1] = measure()
+        tail_count += 1
+
+    return ret
+
 def zigzag_move(pos_apple):
     global tail_count
     ret = vector.create_vector(pos_apple[0], pos_apple[1])
@@ -16,13 +26,11 @@ def zigzag_move(pos_apple):
             dir = South
             y_diff = get_pos_y() - 1
         
-        while y_diff >= 0:
+        while y_diff > 0:
             if not can_move(dir):
                 return vector.create_vector(-1, -1)
             move(dir)
-            if(get_entity_type() == Entities.Apple):
-                ret[0], ret[1] = measure()
-                tail_count += 1
+            ret = check_apple(ret)
                 
             y_diff = get_world_size() - 1 - get_pos_y()
             if dir == South:
@@ -32,9 +40,8 @@ def zigzag_move(pos_apple):
             if not can_move(East):
                 return vector.create_vector(-1, -1)
             move(East)
-            if(get_entity_type() == Entities.Apple):
-                ret[0], ret[1] = measure()
-                tail_count += 1
+            ret = check_apple(ret)
+
         else:
             break
 
@@ -79,6 +86,25 @@ def move_to_without_warp(x, y, pos_apple, stop_if_apple = False):
 
 def go_to_apple(pos_apple):
     global tail_count
+    if tail_count == 40:
+        print("stop")
+    
+    if get_pos_y() == 0:
+        pos_apple = move_to_without_warp(0,0,pos_apple)
+
+        if not move(North):
+            return None
+        pos_apple = check_apple(pos_apple)
+
+        if tail_count > get_world_size() * get_world_size() // 3:
+            pos_apple = zigzag_move(pos_apple)
+            if pos_apple[0] < 0:
+                return None
+            
+            if not move(South):
+                return None
+            return pos_apple
+
     zigzag_lane = tail_count // (get_world_size() - 1) + 1
 
     zigzag_start_pos = vector.create_vector(
@@ -96,23 +122,20 @@ def go_to_apple(pos_apple):
         if not move(East):
             return None
         
-        if get_entity_type() == Entities.Apple:
-            pos_apple[0], pos_apple[1] = measure()
+        pos_apple = check_apple(pos_apple)
 
     pos_apple = zigzag_move(pos_apple)
     if pos_apple[0] < 0:
         return None
     
     move(South)
-    if get_entity_type() == Entities.Apple:
-        pos_apple[0], pos_apple[1] = measure()
+    pos_apple = check_apple(pos_apple)
 
     for _ in range(get_pos_x()-pos_apple[0]):
         if not move(West):
             return None
     
-        if get_entity_type() == Entities.Apple:
-            pos_apple[0], pos_apple[1] = measure()
+        pos_apple = check_apple(pos_apple)
 
     zigzag_lane = tail_count // (get_world_size() - 1) + 1
     zigzag_start_pos = vector.create_vector(
@@ -120,27 +143,34 @@ def go_to_apple(pos_apple):
             get_world_size() - 1
         )
     
-    pos_apple = move_to_without_warp(pos_apple[0], pos_apple[1], pos_apple, True)
-#     if get_pos_x() >= zigzag_start_pos[0]-1:
-#         for _ in range(get_pos_x()-zigzag_start_pos[0]+2):
-#             if not move(West):
-#                 return None
+    if get_world_size() - zigzag_lane < 2:
+        return pos_apple
+
+    if get_pos_x() > zigzag_start_pos[0]-2:
+        for _ in range(get_pos_x()-zigzag_start_pos[0]+2):
+            if not move(West):
+                return None
             
-#         if not move(North):
-#             return None
-#         if get_entity_type() == Entities.Apple:
-#             pos_apple[0], pos_apple[1] = measure()
-#             tail_count += 1
+        if not move(North):
+            return None
+        pos_apple = check_apple(pos_apple)
 
-# #        pos_apple = zigzag_move(pos_apple)
+        pos_apple = zigzag_move(pos_apple)
+        if pos_apple[0] < 0:
+            return None
+    
+        move(South)
+        pos_apple = check_apple(pos_apple)
 
-#     else:
-#         pos_apple = move_to_without_warp(pos_apple[0], pos_apple[1], pos_apple, True)
-#         # zigzag_lane = tail_count // (get_world_size() - 1) + 1
+    else:
+        pos_apple = move_to_without_warp(pos_apple[0], pos_apple[1], pos_apple, True)
+        zigzag_lane = tail_count // (get_world_size() - 1) + 1
+        move(East)
+        pos_apple = check_apple(pos_apple)
 
-#         # while (get_pos_x() < pos_apple[0]) and (pos_apple[0] < (get_world_size() - zigzag_lane - 3)):
-#         #     pos_apple = move_to_without_warp(pos_apple[0], pos_apple[1], pos_apple, True)
-#         #     zigzag_lane = tail_count // (get_world_size() - 1) + 1
+        while (get_pos_x() < pos_apple[0]) and (pos_apple[0] < (get_world_size() - zigzag_lane - 3)):
+            pos_apple = move_to_without_warp(pos_apple[0], pos_apple[1], pos_apple, True)
+            zigzag_lane = tail_count // (get_world_size() - 1) + 1
 
     return pos_apple
 
@@ -192,5 +222,4 @@ if __name__ == "__main__":
     while target != None:
         target = go_to_apple(target)
 
-    print(tail_count)
-    #change_hat(Hats.Brown_Hat)
+    change_hat(Hats.Brown_Hat)
