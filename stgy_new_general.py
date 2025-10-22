@@ -9,13 +9,19 @@ AREA_CONF = [
     {Entities:Entities.Pumpkin, KEY_POS:[0,0,6,6]},
     {Entities:Entities.Cactus, KEY_POS:[6,0,6,6]},
     {Entities:Entities.Pumpkin, KEY_POS:[12,0,6,6]},
+    {Entities:Entities.Cactus, KEY_POS:[18,0,6,6]},
     {Entities:Entities.Cactus, KEY_POS:[0,6,6,6]},
     {Entities:Entities.Pumpkin, KEY_POS:[6,6,6,6]},
     {Entities:Entities.Cactus, KEY_POS:[12,6,6,6]},
-    {Entities:Entities.Carrot, KEY_POS:[0,12,18,5]},
-    {Entities:Entities.Tree, KEY_POS:[0,17,18,5]},
-    {Entities:Entities.Grass, KEY_POS:[18,0,4,17]},
-    {Entities:Entities.Sunflower, KEY_POS:[18,17,4,5]},
+    {Entities:Entities.Pumpkin, KEY_POS:[18,6,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[0,12,6,6]},
+    {Entities:Entities.Cactus, KEY_POS:[6,12,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[12,12,6,6]},
+    {Entities:Entities.Cactus, KEY_POS:[18,12,6,6]},
+    {Entities:Entities.Carrot, KEY_POS:[0,18,24,7]},
+    {Entities:Entities.Tree, KEY_POS:[0,25,24,7]},
+    {Entities:Entities.Grass, KEY_POS:[24,0,8,30]},
+    {Entities:Entities.Sunflower, KEY_POS:[24,30,8,2]},
 ]
 
 def wrap_preparation(context):
