@@ -7,21 +7,32 @@ from utils import nop
 
 AREA_CONF = [
     {Entities:Entities.Pumpkin, KEY_POS:[0,0,6,6]},
-    {Entities:Entities.Cactus, KEY_POS:[6,0,6,6]},
     {Entities:Entities.Pumpkin, KEY_POS:[12,0,6,6]},
-    {Entities:Entities.Cactus, KEY_POS:[18,0,6,6]},
-    {Entities:Entities.Cactus, KEY_POS:[0,6,6,6]},
     {Entities:Entities.Pumpkin, KEY_POS:[6,6,6,6]},
-    {Entities:Entities.Cactus, KEY_POS:[12,6,6,6]},
     {Entities:Entities.Pumpkin, KEY_POS:[18,6,6,6]},
     {Entities:Entities.Pumpkin, KEY_POS:[0,12,6,6]},
-    {Entities:Entities.Cactus, KEY_POS:[6,12,6,6]},
     {Entities:Entities.Pumpkin, KEY_POS:[12,12,6,6]},
-    {Entities:Entities.Cactus, KEY_POS:[18,12,6,6]},
-    {Entities:Entities.Carrot, KEY_POS:[0,18,24,7]},
-    {Entities:Entities.Tree, KEY_POS:[0,25,24,7]},
-    {Entities:Entities.Grass, KEY_POS:[24,0,8,30]},
-    {Entities:Entities.Sunflower, KEY_POS:[24,30,8,2]},
+    {Entities:Entities.Cactus, KEY_POS:[0,18,14,14]},
+#    {Entities:Entities.Carrot, KEY_POS:[0,18,24,7]},
+#    {Entities:Entities.Tree, KEY_POS:[0,25,24,7]},
+#    {Entities:Entities.Grass, KEY_POS:[24,0,8,30]},
+#    {Entities:Entities.Sunflower, KEY_POS:[24,30,8,2]},
+]
+
+AREA_FLOWER = [24,30,8,2]
+
+AREA_POLY = [
+    [6,0,6,6],
+    [18,0,6,6],
+    [0,6,6,6],
+    [12,6,6,6],
+    [6,12,6,6],
+    [18,12,6,6],
+    [14, 18, 10, 7],
+    [14, 25, 10, 7],
+    [24, 0, 8, 10],
+    [24, 10, 8, 10],
+    [24, 20, 8, 10],
 ]
 
 def wrap_preparation(context):
@@ -78,15 +89,39 @@ if __name__ == "__main__":
     #     farm_strategies.harvest_sunflower_mod({farm_strategies.KEY_POS:[11, 0, 1, 12]})
     #     spawn_drone(wrap_main_loop)
 
+    def harv_flower():
+        while True:
+            moves.move_to(AREA_FLOWER[0], AREA_FLOWER[1])
+            operations.do_in_area(
+                farm_strategies.wait_and_harvest,
+                AREA_FLOWER[2], 
+                AREA_FLOWER[3], 
+                {Entities:Entities.Sunflower}
+            )
+    moves.move_to(AREA_FLOWER[0], AREA_FLOWER[1])
+    spawn_drone(harv_flower)
+
     diff_tick = 60000
+
+    for area in AREA_POLY:
+        def harv_poly():
+            while True:
+                farm_strategies.harvest_poly(area[0], area[1], area[2], area[3])
+
+        moves.move_to(area[0], area[1])
+        spawn_drone(harv_poly)
+
+    moves.move_zero_point()
+
+    base_drone_nums = num_drones()
 
     while True:
         first_drone_handler = spawn_drone(wrap_main_loop)
         first_drone_tick = get_tick_count()
         start_tick = first_drone_tick
 
-        for _ in range(max_drones() - 2):
-            while (get_tick_count() - start_tick) < (diff_tick / (max_drones()-1)):
+        for _ in range(max_drones() - base_drone_nums):
+            while (get_tick_count() - start_tick) < (diff_tick / (max_drones()-base_drone_nums)):
                 pass
 
             spawn_drone(wrap_main_loop)

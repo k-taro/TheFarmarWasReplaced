@@ -4,7 +4,7 @@ ORDER_ZIGZAG = "ORDER_ZIGZAG"
 ORDER_COLUMN_MAJOR = "ORDER_COLUMN_MAJOR"
 
 def use_water_if_dry():
-    if (get_water() < 0.5) and num_items(Items.Water) > 0:
+    if (get_water() < 0.7) and num_items(Items.Water) > 0:
         use_item(Items.Water)
 
 def do_in_area(g, width, height, context, order = ORDER_ZIGZAG):
