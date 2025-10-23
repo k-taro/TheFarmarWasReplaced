@@ -3,14 +3,14 @@ import utils
 import moves
 import item_conf
 
-FURM_ITEM = Entities.Sunflower
+FARM_ITEM = Entities.Sunflower
 
 def init():
     clear()
     
     moves.move_zero_point()
     
-    is_need_till = item_conf.is_need_till(FURM_ITEM)
+    is_need_till = item_conf.is_need_till(FARM_ITEM)
     
     for pos_x in range(get_world_size()):
         for pos_y in range(get_world_size()):
@@ -22,14 +22,14 @@ def init():
         move(East)
 
 def main_loop():
-    is_need_water = item_conf.is_need_water(FURM_ITEM)
+    is_need_water = item_conf.is_need_water(FARM_ITEM)
     while True:
         for pos_y in range(get_world_size()):
             if can_harvest():
                 harvest()
             
-            if get_entity_type() != FURM_ITEM:
-                plant(FURM_ITEM)
+            if get_entity_type() != FARM_ITEM:
+                plant(FARM_ITEM)
             
             if is_need_water:
                 operations.use_water_if_dry()
