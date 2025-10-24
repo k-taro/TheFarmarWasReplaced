@@ -3,9 +3,10 @@ import moves
 import utils
 import direction
 import vector
+from vector import vector2tuple
 
-turn_dir = [North, West, East, South]
-dir_name = ["N","W","E","S"]
+ORIGIN = (1, 1)
+MAX_DIST = 10000
 
 dir2vec = {
     North:[0, 1],
@@ -56,61 +57,77 @@ def maze_strategy_init():
         tmp_list.append(True)
         has_reached.append(tmp_list)
 
-def get_trace(dist_list, edge_list, start_pos, is_opp = False):
+def set_dist(dist_list, pos1, pos2, dist):
+    dist_list[pos1][pos2] = dist
+    dist_list[pos2][pos1] = dist
+
+
+# start_pos, end_pos はタプル！
+def get_trace(dist_list, edge_list, start_pos, end_pos):
     trace = []
     now_pos = start_pos
 
-    while dist_list[now_pos[0]][now_pos[1]] > 0:
+    while now_pos == end_pos:
         for dir in direction.Directions:
             next_pos = get_next_pos(now_pos, dir)
 
-            is_can_move = edge_list[now_pos[0]][now_pos[1]][direction.dir2index[dir]]
-            is_root_dir = (dist_list[now_pos[0]][now_pos[1]] > dist_list[next_pos[0]][next_pos[1]])
+            is_can_move = edge_list[now_pos][dir]
+            is_close = dist_list[now_pos][end_pos] > dist_list[next_pos][end_pos]
 
-            if is_can_move and is_root_dir:
-                if is_opp:
-                    trace.append(direction.turn_back(dir))
-                else:
-                    trace.append(dir)
-
+            if is_can_move and is_close:
+                trace.append(dir)
                 now_pos = next_pos
                 break
 
     return trace
         
 def treasure_hunt(x, y, w, h):
-    MAX_DIST = 10000
+    global ORIGIN
+    global MAX_DIST
 
-    dist_list = []
-    edge_list = []
+    dist_list = {}
+    edge_list = {}
 
     # 初期化
-    for index_x in range(w+2):
-        dist_list.append([])
-        edge_list.append([])
-        for index_y in range(h+2):
-            dist_list[index_x].append(MAX_DIST)
-            edge_list[index_x].append([False, False, False, False, False])
+    for pos1_x in range(w+2):
+        for pos1_y in range(h+2):
+            pos1 = (pos1_x, pos1_y)
+
+            edge_list[pos1] = {
+                North:False, 
+                West:False, 
+                South:False,
+                East:False
+            }
+
+            dist_list[pos1] = {}
+            for pos2_x in range(w+2):
+                for pos2_y in range(h+2):
+                    pos2 = (pos2_x, pos2_y)
+                    dist_list[pos1][pos2] = MAX_DIST
 
     now_dist = 0
 
     # マップ作り
     while True:
-        now_pos = vector.create_vector(get_pos_x() + 1, get_pos_y() + 1)
+        now_pos = (get_pos_x() + 1, get_pos_y() + 1)
 
-        dist_list[now_pos[0]][now_pos[1]] = now_dist
+        dist_list[ORIGIN][now_pos] = now_dist
+        dist_list[now_pos] = {}
+        dist_list[now_pos][ORIGIN] = now_dist
+
         back_dir = None
         forward_dir = None
 
         for dir in direction.Directions:
             if can_move(dir):
-                edge_list[now_pos[0]][now_pos[1]][direction.dir2index[dir]] = True
+                edge_list[now_pos][dir] = True
                 
-                next_pos = get_next_pos(now_pos, dir)
+                next_pos = vector2tuple(get_next_pos(now_pos, dir))
 
-                if (now_dist + 1) < dist_list[next_pos[0]][next_pos[1]]:
+                if (now_dist + 1) < dist_list[ORIGIN][next_pos]:
                     forward_dir = dir
-                elif dist_list[next_pos[0]][next_pos[1]] < now_dist:
+                elif dist_list[ORIGIN][next_pos] < now_dist:
                     back_dir = dir
 
         if forward_dir != None:
@@ -124,48 +141,31 @@ def treasure_hunt(x, y, w, h):
         else:
             break
 
-    for i in dist_list:
-        quick_print(i)
+    for pos1_x in range(w+2):
+        for pos1_y in range(h+2):
+            pos1 = (pos1_x, pos1_y)
+            for pos2_x in range(w+2):
+                for pos2_y in range(h+2):
+                    pos2 = (pos2_x, pos2_y)
+                    dist_list[pos1][pos2] = abs(dist_list[ORIGIN][pos1] - dist_list[ORIGIN][pos2])
+                    dist_list[pos2][pos1] = dist_list[pos1][pos2]
 
-    max_try_cnt = 200
+
+    max_try_cnt = 5
     for try_cnt in range(max_try_cnt+1):
-        trace = []
-
         t_x, t_y = measure()
-        treasure_pos = vector.create_vector(t_x + 1, t_y + 1) # 宝箱の位置から探索
+        treasure_pos = (t_x + 1, t_y + 1) # 宝箱の位置から探索
+        drone_pos = (get_pos_x() + 1, get_pos_y() + 1)
 
-        treasure_trace = get_trace(dist_list, edge_list, treasure_pos)
-        drone_trace = get_trace(dist_list, edge_list, vector.create_vector(get_pos_x()+1,get_pos_y()+1))
+        trace_list = get_trace(dist_list, edge_list, drone_pos, treasure_pos)
 
-        lca_dist = 0
+        for t in trace_list:
+            move(t)
+            drone_pos = (get_pos_x() + 1, get_pos_y() + 1)
+            for dir in direction.Directions:
+                if can_move(dir):
+                    edge_list[drone_pos][dir] = True
 
-        while True:
-            if lca_dist >= len(treasure_trace):
-                lca_dist = len(treasure_trace)
-                break
-
-            elif lca_dist >= len(drone_trace):
-                lca_dist = len(drone_trace)
-                break
-            
-            elif (treasure_trace[len(treasure_trace)-1-lca_dist] != drone_trace[len(drone_trace)-1-lca_dist]):
-                break
-
-            lca_dist += 1
-
-        trace_index = 0
-        while trace_index < len(treasure_trace) - lca_dist:
-            trace.append(direction.turn_back(treasure_trace[trace_index]))
-            trace_index += 1
-
-        trace_index = 0
-        while trace_index < len(drone_trace) - lca_dist:
-            trace.append(drone_trace[len(drone_trace) - 1 - (lca_dist + trace_index)])
-            trace_index += 1
-
-        while len(trace) > 0:
-            dir = trace.pop()
-            move(dir)
         if try_cnt < max_try_cnt:
             substance = get_world_size() * 2**(num_unlocked(Unlocks.Mazes) - 1)
             use_item(Items.Weird_Substance, substance)
