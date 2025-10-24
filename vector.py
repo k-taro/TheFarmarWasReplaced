@@ -19,3 +19,6 @@ def turn_right(vec1):
 
 def turn_left(vec1):
     return create_vector(-vec1[KEY_Y], vec1[KEY_X])
+
+def vector2tuple(vec):
+    return vec[KEY_X], vec[KEY_Y]
