@@ -127,7 +127,7 @@ def treasure_hunt(x, y, w, h):
     for i in dist_list:
         quick_print(i)
 
-    max_try_cnt = 50
+    max_try_cnt = 200
     for try_cnt in range(max_try_cnt+1):
         trace = []
 
