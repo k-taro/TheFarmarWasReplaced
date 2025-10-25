@@ -213,10 +213,10 @@ def treasure_hunt(x, y, w, h):
                     # 通る予定だったかを調べ、一番ショートカットできる方向を記録する
                     for i in range(len(trace_list)):
                         if trace_list[i][KEY_TRACE_POS] == next_pos:
-                           if shortcut_dist > (i+1):
-                               shortcut_dir = dir
-                               shortcut_dist = i+1
-                           break
+                            if shortcut_dist > (i+1):
+                                shortcut_dir = dir
+                                shortcut_dist = i+1
+                            break
             
             if shortcut_dir != None:
                 while len(trace_list) > shortcut_dist:
