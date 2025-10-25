@@ -51,9 +51,9 @@ def set_edge(edge_list, pos, dir):
     next_pos = get_next_pos(pos, dir)
 
     if not pos in edge_list:
-        edge_list[pos] = {}
+        edge_list[pos] = create_edge_dict()
     if not next_pos in edge_list:
-        edge_list[next_pos] = {}
+        edge_list[next_pos] = create_edge_dict()
 
     edge_list[pos][dir] = True
     edge_list[next_pos][direction.turn_back(dir)] = True
@@ -128,7 +128,8 @@ def await_scout(scout_drone_list, dist_list, edge_list):
 
         for pos in tmp_edge_list:
             for dir in direction.Directions:
-                set_edge(edge_list, pos, dir)
+                if tmp_edge_list[pos][dir]:
+                    set_edge(edge_list, pos, dir)
 
     return dist_list, edge_list
 
@@ -203,11 +204,9 @@ def research_map(dir, base_dist, w, h):
     return await_scout(scout_drone_list,dist_list,edge_list)   
 
 def hunting(edge_list, have_to_spawn, max_try_cnt, substance):
-    new_edge_list = {}
-    drone_list = []
     tmp_treasure = measure()
     if tmp_treasure == None:
-        return False, new_edge_list, drone_list
+        return False
     
     treasure_pos = (tmp_treasure[0] + 1, tmp_treasure[1] + 1) # 宝箱の位置から探索
     drone_pos = (get_pos_x() + 1, get_pos_y() + 1)
@@ -220,8 +219,7 @@ def hunting(edge_list, have_to_spawn, max_try_cnt, substance):
     if len(trace_list) > 0 and have_to_spawn:
         def wrap_hunting():
             subdrone_hunting(edge_list, measure(), max_try_cnt, substance)
-        drone = spawn_drone(wrap_hunting)
-        drone_list.append(drone)
+        spawn_drone(wrap_hunting)
 
     while len(trace_list):
         t = trace_list.pop()
@@ -233,15 +231,15 @@ def hunting(edge_list, have_to_spawn, max_try_cnt, substance):
 
         tmp_treasure = measure()
         if tmp_treasure == None or (tmp_treasure[0] + 1, tmp_treasure[1] + 1) != treasure_pos:
-            return False, new_edge_list, drone_list
+            return False
 
         # 壁の状況を調べて、ショートカットできるかも調べる
         for dir in direction.Directions:
             if can_move(dir) and not edge_list[drone_pos][dir]: # 空いてなかった壁が開いている
-                next_pos = get_next_pos(drone_pos,dir)
+                next_pos = vector2tuple(get_next_pos(drone_pos,dir))
 
-                set_edge(edge_list, drone_pos, dir)
-                set_edge(new_edge_list, drone_pos, dir)
+                edge_list[drone_pos][dir] = True
+                edge_list[next_pos][direction.turn_back(dir)] = True
 
                 # 通る予定だったかを調べ、一番ショートカットできる方向を記録する
                 for i in range(len(trace_list)):
@@ -257,46 +255,22 @@ def hunting(edge_list, have_to_spawn, max_try_cnt, substance):
 
             trace_list.append({KEY_TRACE_POS:drone_pos, KEY_TRACE_DIR:shortcut_dir})
 
-    return True, new_edge_list, drone_list
+    return True
 
 def subdrone_hunting(edge_list, first_treasure, max_try_cnt, substance):
-    new_drone_list = []
-    new_edge_list = {}
     while True:
         tmp_treasure = measure()
         if tmp_treasure == None:
-            return new_edge_list, new_drone_list
+            return
         elif first_treasure != tmp_treasure:
             break
         else:
             pass
 
     for try_cnt in range(max_try_cnt):
-        is_found_treasure, tmp_edge_list, new_drone_list = hunting(edge_list, substance, max_try_cnt, substance)
+        is_found_treasure = hunting(edge_list, substance, max_try_cnt, substance)
         if is_found_treasure:
             use_item(Items.Weird_Substance, substance)
-
-        for pos in tmp_edge_list:
-            for dir in tmp_edge_list[pos]:
-                set_edge(edge_list, pos, dir)
-                set_edge(new_edge_list, pos, dir)
-        
-        tmp_drone_list = []
-        for drone in new_drone_list:
-            if has_finished(drone):
-                el, dl = wait_for(drone)
-                for pos in el:
-                    for dir in el[pos]:
-                        set_edge(edge_list, pos, dir)
-                        set_edge(new_edge_list, pos, dir)
-
-                tmp_drone_list.add(dl)
-
-        new_edge_list.add(tmp_edge_list)
-        new_drone_list.add(tmp_drone_list)
-
-    return new_edge_list, new_drone_list
-
 
 def treasure_hunt(x, y, w, h):
     global ORIGIN
@@ -311,31 +285,15 @@ def treasure_hunt(x, y, w, h):
         dist_list[pos] = tmp_dist_list[pos]
 
     for pos in tmp_edge_list:
-        for dir in tmp_edge_list[pos]:
-            set_edge(edge_list, pos, dir)
+        for dir in direction.Directions:
+            if tmp_edge_list[pos][dir]:
+                set_edge(edge_list, pos, dir)
 
     max_try_cnt = 299
-    drone_list = []
     is_found_treasure = True
     for try_cnt in range(max_try_cnt+1):
         have_to_spawn = (try_cnt < max_try_cnt - 10) and is_found_treasure
-        is_found_treasure, new_edge_list, new_drone_list  = hunting(edge_list, have_to_spawn, 10, substance)
-        for pos in new_edge_list:
-            for dir in new_edge_list[pos]:
-                set_edge(edge_list, pos, dir)
-                
-        tmp_drone_list = []
-        for drone in drone_list:
-            if has_finished(drone):
-                el, dl = wait_for(drone)
-                for pos in el:
-                    for dir in el[pos]:
-                        set_edge(edge_list, pos, dir)
-
-                tmp_drone_list.add(dl)
-
-        drone_list.add(tmp_drone_list)
-
+        is_found_treasure = hunting(edge_list, have_to_spawn, 10, substance)
 
         if is_found_treasure:
             if try_cnt < max_try_cnt:
