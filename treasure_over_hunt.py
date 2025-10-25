@@ -31,15 +31,6 @@ is_get_treasure = False
 treasure_x = 0
 treasure_y = 0
 
-def create_edge_dict():
-    ret = {
-        North:False, 
-        West:False, 
-        South:False,
-        East:False
-    }
-    return ret
-
 def create_list_dist_edge(w, h):
     dist_list = {}
     edge_list = {}
@@ -48,7 +39,13 @@ def create_list_dist_edge(w, h):
         for pos1_y in range(h+2):
             pos1 = (pos1_x, pos1_y)
 
-            edge_list[pos1] = create_edge_dict()
+            edge_list[pos1] = {
+                North:False, 
+                West:False, 
+                South:False,
+                East:False
+            }
+
             dist_list[pos1] = MAX_DIST
 
     return dist_list, edge_list
@@ -81,22 +78,10 @@ def maze_strategy_init():
         tmp_list.append(True)
         has_reached.append(tmp_list)
 
-def set_edge(edge_list, pos, dir):
-    next_pos = vector2tuple(get_next_pos(pos, dir))
+def set_dist(dist_list, pos1, pos2, dist):
+    dist_list[pos1][pos2] = dist
+    dist_list[pos2][pos1] = dist
 
-    if not pos in edge_list:
-        edge_list[pos] = create_edge_dict()
-    if not next_pos in edge_list:
-        edge_list[next_pos] = create_edge_dict()
-
-    edge_list[pos][dir] = True
-    edge_list[next_pos][dir] = True
-
-def get_dist(dist_list, pos):
-    if not pos in dist_list:
-        dist_list[pos] = MAX_DIST
-
-    return dist_list[pos]
 
 def bfs(dist_list, edge_list, start_pos, end_pos):
     queue = []
@@ -151,18 +136,14 @@ def await_scout(scout_drone_list, dist_list, edge_list):
 
         for pos in tmp_edge_list:
             for dir in direction.Directions:
-                if tmp_edge_list[pos][dir]:
-                    set_edge(edge_list, pos, dir)
+                edge_list[pos][dir] = edge_list[pos][dir] or tmp_edge_list[pos][dir]
 
     return dist_list, edge_list
 
 def research_map(dir, base_dist, w, h):
     branch_pos = None
     scout_drone_list = []
-    dist_list = {}
-    edge_list = {}
-
-    # dist_list, edge_list = create_list_dist_edge(w, h)
+    dist_list, edge_list = create_list_dist_edge(w, h)
     now_dist = base_dist
 
     dist_list[(get_pos_x()+1, get_pos_y()+1)] = base_dist
@@ -186,11 +167,12 @@ def research_map(dir, base_dist, w, h):
         for dir in direction.Directions:
             if can_move(dir):
                 next_pos = vector2tuple(get_next_pos(now_pos, dir))
-                set_edge(edge_list, now_pos, dir)
+                edge_list[now_pos][dir] = True
+                edge_list[next_pos][direction.turn_back(dir)] = True
 
-                if (now_dist + 1) < get_dist(dist_list, next_pos):
+                if (now_dist + 1) < dist_list[next_pos]:
                     forward_dir_list.append(dir)
-                elif get_dist(dist_list, next_pos) < now_dist:
+                elif dist_list[next_pos] < now_dist:
                     back_dir = dir
 
         if len(forward_dir_list) != 0:
@@ -206,8 +188,8 @@ def research_map(dir, base_dist, w, h):
                     def wrap_r_m():
                         return research_map(dir, now_dist, w, h)
 
-                    hdrone = spawn_drone(wrap_r_m)
-#                    hdrone = None
+#                    hdrone = spawn_drone(wrap_r_m)
+                    hdrone = None
                     if hdrone != None:
                         dist_list[next_pos] = now_dist + 1
                         scout_drone_list.append(hdrone)
@@ -243,12 +225,6 @@ def treasure_hunt(x, y, w, h):
     #     for dir in direction.Directions:
     #         edge_list[pos][dir] = edge_list[pos][dir] or tmp_dist_list[pos]
 
-    for pos_x in range(w+2):
-        for pos_y in range(h+2):
-            pos = (pos_x, pos_y)
-            if not pos in edge_list:
-                edge_list[pos] = create_edge_dict()
-
     max_try_cnt = 300
     for try_cnt in range(max_try_cnt+1):
         t_x, t_y = measure()
@@ -271,7 +247,9 @@ def treasure_hunt(x, y, w, h):
             for dir in direction.Directions:
                 if can_move(dir) and not edge_list[drone_pos][dir]: # 空いてなかった壁が開いている
                     next_pos = vector2tuple(get_next_pos(drone_pos,dir))
-                    set_edge(edge_list, drone_pos, dir)
+
+                    edge_list[drone_pos][dir] = True
+                    edge_list[next_pos][direction.turn_back(dir)] = True
 
                     # 通る予定だったかを調べ、一番ショートカットできる方向を記録する
                     for i in range(len(trace_list)):
