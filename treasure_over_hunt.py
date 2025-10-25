@@ -24,13 +24,6 @@ turn_strategy = {
     East:[North, South, West]
     }
     
-has_reached = []
-move_stack = []
-is_get_treasure = False
-
-treasure_x = 0
-treasure_y = 0
-
 def create_list_dist_edge(w, h):
     dist_list = {}
     edge_list = {}
@@ -52,35 +45,6 @@ def create_list_dist_edge(w, h):
 
 def get_next_pos(now_pos, dir):
     return vector.create_vector(now_pos[0] + dir2vec[dir][0], now_pos[1] + dir2vec[dir][1])
-
-def maze_strategy_init():
-    global is_get_treasure
-    global has_reached
-    global move_stack
-    global treasure_x
-    global treasure_y
-
-    is_get_treasure = False
-    has_reached = []
-    move_stack = []
-    
-    treasure_x, treasure_y = measure()    
-    
-    # 到達フラグの初期化
-    for pos_x in range(get_world_size()+2):
-        tmp_list = [True]
-        for pos_y in range(get_world_size()):
-            if pos_x == 0 or pos_x == get_world_size()+1:
-                tmp_list.append(True)
-            else:
-                tmp_list.append(False)
-                
-        tmp_list.append(True)
-        has_reached.append(tmp_list)
-
-def set_dist(dist_list, pos1, pos2, dist):
-    dist_list[pos1][pos2] = dist
-    dist_list[pos2][pos1] = dist
 
 
 def bfs(dist_list, edge_list, start_pos, end_pos):
@@ -128,6 +92,7 @@ def get_trace(dist_list, edge_list, end_pos):
 
     return trace
 
+
 def await_scout(scout_drone_list, dist_list, edge_list):
     for hdrone in scout_drone_list:
         tmp_dist_list, tmp_edge_list = wait_for(hdrone)
@@ -139,6 +104,7 @@ def await_scout(scout_drone_list, dist_list, edge_list):
                 edge_list[pos][dir] = edge_list[pos][dir] or tmp_edge_list[pos][dir]
 
     return dist_list, edge_list
+
 
 def research_map(dir, base_dist, w, h):
     branch_pos = None
@@ -176,28 +142,27 @@ def research_map(dir, base_dist, w, h):
                     back_dir = dir
 
         if len(forward_dir_list) != 0:
-            if len(forward_dir_list) == 1:
-                now_dist += 1
-                move(forward_dir_list[0])
-            else:
+            if len(forward_dir_list) > 1:
                 if branch_pos == None:
                     branch_pos = now_pos
-                while len(forward_dir_list) > 0:
-                    dir = forward_dir_list.pop()
-                    next_pos = vector2tuple(get_next_pos(now_pos, dir))
-                    def wrap_r_m():
-                        return research_map(dir, now_dist, w, h)
 
-#                    hdrone = spawn_drone(wrap_r_m)
-                    hdrone = None
-                    if hdrone != None:
-                        dist_list[next_pos] = now_dist + 1
-                        scout_drone_list.append(hdrone)
-                    else:
-                        now_dist += 1
-                        move(dir)
-                        break
+            while len(forward_dir_list) > 1:
+                dir = forward_dir_list.pop()
+                next_pos = vector2tuple(get_next_pos(now_pos, dir))
+                def wrap_r_m():
+                    return research_map(dir, now_dist, w, h)
 
+#                hdrone = spawn_drone(wrap_r_m)
+                hdrone = None
+                if hdrone != None:
+                    dist_list[next_pos] = now_dist + 1
+                    scout_drone_list.append(hdrone)
+                else:
+                    forward_dir_list.append(dir)
+                    break
+
+            now_dist += 1
+            move(forward_dir_list.pop())
 
         elif back_dir != None:
             if (branch_pos == None):
@@ -218,12 +183,6 @@ def treasure_hunt(x, y, w, h):
 
     # マップ作り
     origin_dist_list, edge_list = research_map(None, 0, w, h)
-    # for pos in tmp_dist_list:
-    #     dist_list[pos] = tmp_dist_list[pos]
-
-    # for pos in tmp_edge_list:
-    #     for dir in direction.Directions:
-    #         edge_list[pos][dir] = edge_list[pos][dir] or tmp_dist_list[pos]
 
     max_try_cnt = 300
     for try_cnt in range(max_try_cnt+1):
@@ -288,6 +247,5 @@ def init():
 if __name__ == "__main__":
     while True:
         init()
-        maze_strategy_init()
         main_loop()
     
