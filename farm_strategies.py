@@ -16,8 +16,8 @@ def preparation(ent):
     if ent == Entities.Tree:
         if (get_pos_x() % 2) == (get_pos_y() % 2):
             plant(Entities.Tree)
-            if num_items(Items.Fertilizer) > 0:
-                use_item(Items.Fertilizer)
+            # if num_items(Items.Fertilizer) > 0:
+            #     use_item(Items.Fertilizer)
         else:
             plant(Entities.Bush)
 

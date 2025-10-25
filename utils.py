@@ -14,7 +14,7 @@ def get_full_unlock_dict():
 def get_full_item_dict():
     item_dict = {}
     for it in Items:
-        item_dict[it] = 65535
+        item_dict[it] = 4294967296
 
     return item_dict
 
