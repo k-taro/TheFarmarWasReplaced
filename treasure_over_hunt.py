@@ -23,6 +23,15 @@ turn_strategy = {
     South:[East, West, North],
     East:[North, South, West]
     }
+
+def create_edge_dict():
+    ret = {
+        North:False, 
+        West:False, 
+        South:False,
+        East:False
+    }
+    return ret
     
 def create_list_dist_edge(w, h):
     dist_list = {}
@@ -32,19 +41,33 @@ def create_list_dist_edge(w, h):
         for pos1_y in range(h+2):
             pos1 = (pos1_x, pos1_y)
 
-            edge_list[pos1] = {
-                North:False, 
-                West:False, 
-                South:False,
-                East:False
-            }
-
+            edge_list[pos1] = create_edge_dict()
             dist_list[pos1] = MAX_DIST
 
     return dist_list, edge_list
 
+
+def set_edge(edge_list, pos, dir):
+    next_pos = get_next_pos(pos, dir)
+
+    if not pos in edge_list:
+        edge_list[pos] = create_edge_dict()
+    if not next_pos in edge_list:
+        edge_list[next_pos] = create_edge_dict()
+
+    edge_list[pos][dir] = True
+    edge_list[next_pos][direction.turn_back(dir)] = True
+
+
+def get_dist(dist_list, pos):
+    if not pos in dist_list:
+        dist_list[pos] = MAX_DIST
+
+    return dist_list[pos]
+
+
 def get_next_pos(now_pos, dir):
-    return vector.create_vector(now_pos[0] + dir2vec[dir][0], now_pos[1] + dir2vec[dir][1])
+    return (now_pos[0] + dir2vec[dir][0], now_pos[1] + dir2vec[dir][1])
 
 
 def bfs(dist_list, edge_list, start_pos, end_pos):
@@ -101,7 +124,8 @@ def await_scout(scout_drone_list, dist_list, edge_list):
 
         for pos in tmp_edge_list:
             for dir in direction.Directions:
-                edge_list[pos][dir] = edge_list[pos][dir] or tmp_edge_list[pos][dir]
+                if tmp_edge_list[pos][dir]:
+                    set_edge(edge_list, pos, dir)
 
     return dist_list, edge_list
 
@@ -109,7 +133,8 @@ def await_scout(scout_drone_list, dist_list, edge_list):
 def research_map(dir, base_dist, w, h):
     branch_pos = None
     scout_drone_list = []
-    dist_list, edge_list = create_list_dist_edge(w, h)
+    dist_list = {}
+    edge_list = {}
     now_dist = base_dist
 
     dist_list[(get_pos_x()+1, get_pos_y()+1)] = base_dist
@@ -133,12 +158,11 @@ def research_map(dir, base_dist, w, h):
         for dir in direction.Directions:
             if can_move(dir):
                 next_pos = vector2tuple(get_next_pos(now_pos, dir))
-                edge_list[now_pos][dir] = True
-                edge_list[next_pos][direction.turn_back(dir)] = True
+                set_edge(edge_list, now_pos, dir)
 
-                if (now_dist + 1) < dist_list[next_pos]:
+                if (now_dist + 1) < get_dist(dist_list, next_pos):
                     forward_dir_list.append(dir)
-                elif dist_list[next_pos] < now_dist:
+                elif get_dist(dist_list, next_pos) < now_dist:
                     back_dir = dir
 
         if len(forward_dir_list) != 0:
@@ -146,14 +170,13 @@ def research_map(dir, base_dist, w, h):
                 if branch_pos == None:
                     branch_pos = now_pos
 
-            while len(forward_dir_list) > 1:
+            while len(forward_dir_list) > 1 and branch_pos != now_pos:
                 dir = forward_dir_list.pop()
                 next_pos = vector2tuple(get_next_pos(now_pos, dir))
                 def wrap_r_m():
                     return research_map(dir, now_dist, w, h)
 
-#                hdrone = spawn_drone(wrap_r_m)
-                hdrone = None
+                hdrone = spawn_drone(wrap_r_m)
                 if hdrone != None:
                     dist_list[next_pos] = now_dist + 1
                     scout_drone_list.append(hdrone)
@@ -182,7 +205,15 @@ def treasure_hunt(x, y, w, h):
     global MAX_DIST
 
     # マップ作り
-    origin_dist_list, edge_list = research_map(None, 0, w, h)
+    dist_list, edge_list = create_list_dist_edge(w,h)
+    tmp_dist_list, tmp_edge_list = research_map(None, 0, w, h)
+    for pos in tmp_dist_list:
+        dist_list[pos] = tmp_dist_list[pos]
+
+    for pos in tmp_edge_list:
+        for dir in direction.Directions:
+            if tmp_edge_list[pos][dir]:
+                set_edge(edge_list, pos, dir)
 
     max_try_cnt = 300
     for try_cnt in range(max_try_cnt+1):
