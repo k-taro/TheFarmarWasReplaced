@@ -73,7 +73,7 @@ def get_next_pos(now_pos, dir):
     return (now_pos[0] + dir2vec[dir][0], now_pos[1] + dir2vec[dir][1])
 
 
-def bfs(edge_list, start_pos, end_pos):
+def bfs(edge_list, start_pos, end_pos, need_interrupt = False):
     queue = []
     dist_list = {}
     dist_list[start_pos] = 0
@@ -85,7 +85,7 @@ def bfs(edge_list, start_pos, end_pos):
         first_index += 1
 
         tmp_treasure = measure()
-        if tmp_treasure == None or (tmp_treasure[0] + 1, tmp_treasure[1] + 1) != end_pos:
+        if need_interrupt and (tmp_treasure == None or (tmp_treasure[0] + 1, tmp_treasure[1] + 1) != end_pos):
             return []
 
         for dir in direction.Directions:
@@ -218,7 +218,7 @@ def hunting(edge_list, have_to_spawn, max_try_cnt, substance):
 
     trace_list = []
     if drone_pos != treasure_pos:
-        trace_list = bfs(edge_list, drone_pos, treasure_pos)
+        trace_list = bfs(edge_list, drone_pos, treasure_pos, True)
 
     if len(trace_list) > 0 and have_to_spawn:
         def wrap_hunting():
