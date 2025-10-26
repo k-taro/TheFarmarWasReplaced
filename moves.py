@@ -2,20 +2,10 @@ import utils
 import collections
 
 def move_zero_point():
-    while (get_pos_x() != 0):
-        move(West)
-
-    while (get_pos_y() != 0):
-        move(South)    
+    move_to(0, 0)
 
 def move_center():
-    move_zero_point()
-
-    while (get_pos_x() < (get_world_size() / 2)):
-        move(East)
-
-    while (get_pos_y() < (get_world_size() / 2)):
-        move(North)
+    move_to(get_world_size() / 2, get_world_size() / 2)
 
 def move_to_without_warp(x, y):
     now_pos = [get_pos_x(), get_pos_y()]
