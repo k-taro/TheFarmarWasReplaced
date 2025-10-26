@@ -23,6 +23,9 @@ turn_strategy = {
     East:[North, South, West]
     }
 
+def get_current_coordinate():
+    return get_pos_x() + 1, get_pos_y() + 1
+
 def create_edge_dict():
     ret = {
         North:False, 
@@ -70,8 +73,9 @@ def get_next_pos(now_pos, dir):
     return (now_pos[0] + dir2vec[dir][0], now_pos[1] + dir2vec[dir][1])
 
 
-def bfs(dist_list, edge_list, start_pos, end_pos):
+def bfs(edge_list, start_pos, end_pos):
     queue = []
+    dist_list = {}
     dist_list[start_pos] = 0
     first_index = 0
 
@@ -211,11 +215,10 @@ def hunting(edge_list, have_to_spawn, max_try_cnt, substance):
     
     treasure_pos = (tmp_treasure[0] + 1, tmp_treasure[1] + 1) # 宝箱の位置から探索
     drone_pos = (get_pos_x() + 1, get_pos_y() + 1)
-    dist_list = {}
 
     trace_list = []
     if drone_pos != treasure_pos:
-        trace_list = bfs(dist_list, edge_list, drone_pos, treasure_pos)
+        trace_list = bfs(edge_list, drone_pos, treasure_pos)
 
     if len(trace_list) > 0 and have_to_spawn:
         def wrap_hunting():
