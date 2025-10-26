@@ -5,7 +5,6 @@ import direction
 import vector
 from vector import vector2tuple
 
-ORIGIN = (1, 1)
 MAX_DIST = 10000
 KEY_TRACE_POS = "KEY_TRACE_POS"
 KEY_TRACE_DIR = "KEY_TRACE_DIR"
@@ -34,6 +33,7 @@ def create_edge_dict():
     return ret
     
 def create_list_dist_edge(w, h):
+    global MAX_DIST
     dist_list = {}
     edge_list = {}
 
@@ -204,6 +204,7 @@ def research_map(dir, base_dist, w, h):
     return await_scout(scout_drone_list,dist_list,edge_list)   
 
 def hunting(edge_list, have_to_spawn, max_try_cnt, substance):
+    global MAX_DIST
     tmp_treasure = measure()
     if tmp_treasure == None:
         return False
@@ -273,9 +274,6 @@ def subdrone_hunting(edge_list, first_treasure, max_try_cnt, substance):
             use_item(Items.Weird_Substance, substance)
 
 def treasure_hunt(x, y, w, h):
-    global ORIGIN
-    global MAX_DIST
-
     substance = w * 2**(num_unlocked(Unlocks.Mazes) - 1)
 
     # マップ作り
