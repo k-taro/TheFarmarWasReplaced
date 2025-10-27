@@ -21,10 +21,13 @@ def get_treasure_coordinate():
 
 def hunting(edge_list, area_set, substance):
     treasure_pos = (-1, -1)
+    before_tre_pos = (-1, 0)
+    before_dir = None
 
     while True:
         while not treasure_pos in area_set:
-            do_a_flip()
+            for _ in range(100):
+                pass
             treasure_pos = get_treasure_coordinate()
             if treasure_pos == None:
                 return
@@ -36,14 +39,16 @@ def hunting(edge_list, area_set, substance):
 
         while len(trace) > 0:
             t = trace.pop()
-            move(direction.turn_back(t[treasure_over_hunt.KEY_TRACE_DIR]))
+            before_dir = direction.turn_back(t[treasure_over_hunt.KEY_TRACE_DIR])
+            move(before_dir)
         
         use_item(Items.Weird_Substance, substance)
         next_treasure_pos = get_treasure_coordinate()
-        if treasure_pos == next_treasure_pos:
+        if treasure_pos == next_treasure_pos and next_treasure_pos == before_tre_pos:
             harvest()
             return
             
+        before_tre_pos = treasure_pos
         treasure_pos = next_treasure_pos
 
 
@@ -151,6 +156,6 @@ def treasure_hunt(x, y, w):
     place_drones(edge_list, w, substance)
 
 if __name__ == "__main__":
-    while True:
-        init(get_world_size())
-        treasure_hunt(0, 0, get_world_size())
+#    while True:
+    init(get_world_size())
+    treasure_hunt(0, 0, get_world_size())
