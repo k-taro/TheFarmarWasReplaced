@@ -156,6 +156,8 @@ def treasure_hunt(x, y, w):
     place_drones(edge_list, w, substance)
 
 if __name__ == "__main__":
-#    while True:
-    init(get_world_size())
-    treasure_hunt(0, 0, get_world_size())
+    while True:
+        init(get_world_size())
+        treasure_hunt(0, 0, get_world_size())
+        if num_items(Items.Gold) >= 9863168:
+            break

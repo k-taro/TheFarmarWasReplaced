@@ -53,10 +53,10 @@ def main():
 
     cactus_sort(North)
 
-    for i in drone_list:
-        wait_for(i)
+    # for i in drone_list:
+    #     wait_for(i)
 
-    moves.move_to(0,0)
+    moves.move_to(0,get_world_size()-1)
 
     for pos_y in range(get_world_size()-1):
         while num_drones() >= max_drones():
@@ -65,7 +65,7 @@ def main():
         drone = spawn_drone(ce)
         drone_list.append(drone)
 
-        move(North)
+        move(South)
 
     cactus_sort(East)
 
@@ -77,3 +77,5 @@ def main():
 if __name__ == "__main__":
     while True:
         main()
+        if  num_items(Items.Cactus) >= 33554432:
+            break
