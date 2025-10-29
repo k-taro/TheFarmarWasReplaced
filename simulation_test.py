@@ -8,5 +8,5 @@ full_item_dict[Items.Gold] = 0
 
 #unlock_dist[Unlocks.Expand] = 6
 
-run_time = simulate("cross_treasure_hunt", unlock_dist, full_item_dict, {}, 0, 1)
+run_time = simulate("treasure_over_hunt", unlock_dist, full_item_dict, {}, 0, 16)
 print(run_time)
