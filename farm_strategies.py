@@ -20,8 +20,11 @@ def preparation(ent):
             #     use_item(Items.Fertilizer)
         else:
             plant(Entities.Bush)
-
-    elif ent != Entities.Grass:
+    
+    elif ent == Entities.Grass:
+        harvest()
+        
+    else:
         plant(ent)
 
     operations.use_water_if_dry()
