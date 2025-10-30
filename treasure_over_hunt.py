@@ -23,8 +23,16 @@ turn_strategy = {
     East:[North, South, West]
     }
 
-def get_current_coordinate():
-    return get_pos_x() + 1, get_pos_y() + 1
+def get_current_coordinate(base_pos):
+    return get_pos_x() + 1 - base_pos[0], get_pos_y() + 1 - base_pos[1]
+
+def get_treasure_coordinate(base_pos):
+    t_pos = measure()
+
+    if t_pos == None:
+        return None
+    
+    return t_pos[0] + 1 - base_pos[0], t_pos[1] + 1 - base_pos[1]
 
 def create_edge_dict():
     ret = {
@@ -73,7 +81,7 @@ def get_next_pos(now_pos, dir):
     return (now_pos[0] + dir2vec[dir][0], now_pos[1] + dir2vec[dir][1])
 
 
-def bfs(edge_list, start_pos, end_pos, need_interrupt = False):
+def bfs(edge_list, start_pos, end_pos, need_interrupt = False, base_pos = (0, 0)):
     queue = []
     dist_list = {}
     dist_list[start_pos] = 0
@@ -84,12 +92,12 @@ def bfs(edge_list, start_pos, end_pos, need_interrupt = False):
         q = queue[first_index]
         first_index += 1
 
-        tmp_treasure = measure()
-        if need_interrupt and (tmp_treasure == None or (tmp_treasure[0] + 1, tmp_treasure[1] + 1) != end_pos):
+        tmp_treasure = get_treasure_coordinate(base_pos)
+        if need_interrupt and (tmp_treasure == None or tmp_treasure != end_pos):
             return []
 
         for dir in direction.Directions:
-            next = vector2tuple(get_next_pos(q, dir))
+            next = get_next_pos(q, dir)
             if edge_list[q][dir] and (not next in dist_list):
                 queue.append(next)
                 dist_list[next] = dist_list[q] + 1
@@ -108,7 +116,7 @@ def get_trace(dist_list, edge_list, end_pos):
 
     while dist_list[now_pos] > 0:
         for dir in direction.Directions:
-            next_pos = vector2tuple(get_next_pos(now_pos, dir))
+            next_pos = get_next_pos(now_pos, dir)
 
             if not next_pos in dist_list:
                 continue
@@ -138,14 +146,14 @@ def await_scout(scout_drone_list, dist_list, edge_list):
     return dist_list, edge_list
 
 
-def research_map(dir, base_dist, w, h):
+def research_map(dir, base_dist, w, h, has_to_spawn = True, base_pos = (0, 0)):
     branch_pos = None
     scout_drone_list = []
     dist_list = {}
     edge_list = {}
     now_dist = base_dist
 
-    dist_list[(get_pos_x()+1, get_pos_y()+1)] = base_dist
+    dist_list[get_current_coordinate(base_pos)] = base_dist
 
     if dir != None:
         move(dir)
@@ -153,7 +161,7 @@ def research_map(dir, base_dist, w, h):
 
     # マップ作り
     while True:
-        now_pos = (get_pos_x() + 1, get_pos_y() + 1)
+        now_pos = get_current_coordinate(base_pos)
 
         if branch_pos != None and now_pos == branch_pos:
             branch_pos = None
@@ -165,7 +173,7 @@ def research_map(dir, base_dist, w, h):
 
         for dir in direction.Directions:
             if can_move(dir):
-                next_pos = vector2tuple(get_next_pos(now_pos, dir))
+                next_pos = get_next_pos(now_pos, dir)
                 set_edge(edge_list, now_pos, dir)
 
                 if (now_dist + 1) < get_dist(dist_list, next_pos):
@@ -180,11 +188,14 @@ def research_map(dir, base_dist, w, h):
 
             while len(forward_dir_list) > 1 and branch_pos != now_pos:
                 dir = forward_dir_list.pop()
-                next_pos = vector2tuple(get_next_pos(now_pos, dir))
-                def wrap_r_m():
-                    return research_map(dir, now_dist, w, h)
+                next_pos = get_next_pos(now_pos, dir)
 
-                hdrone = spawn_drone(wrap_r_m)
+                hdrone = None
+                if has_to_spawn:
+                    def wrap_r_m():
+                        return research_map(dir, now_dist, w, h)
+                    hdrone = spawn_drone(wrap_r_m)
+
                 if hdrone != None:
                     dist_list[next_pos] = now_dist + 1
                     scout_drone_list.append(hdrone)
@@ -207,40 +218,34 @@ def research_map(dir, base_dist, w, h):
 
     return await_scout(scout_drone_list,dist_list,edge_list)   
 
-def hunting(edge_list, have_to_spawn, max_try_cnt, substance):
+def hunting(edge_list, have_to_spawn, max_try_cnt, substance, base_pos):
     global MAX_DIST
-    tmp_treasure = measure()
-    if tmp_treasure == None:
+    treasure_pos = get_treasure_coordinate(base_pos)
+    if treasure_pos == None:
         return False
     
-    treasure_pos = (tmp_treasure[0] + 1, tmp_treasure[1] + 1) # 宝箱の位置から探索
-    drone_pos = (get_pos_x() + 1, get_pos_y() + 1)
+    drone_pos = get_current_coordinate(base_pos)
 
     trace_list = []
     if drone_pos != treasure_pos:
-        trace_list = bfs(edge_list, drone_pos, treasure_pos, True)
-
-    if len(trace_list) > 0 and have_to_spawn:
-        def wrap_hunting():
-            subdrone_hunting(edge_list, measure(), max_try_cnt, substance)
-        spawn_drone(wrap_hunting)
+        trace_list = bfs(edge_list, drone_pos, treasure_pos, True, base_pos)
 
     while len(trace_list):
         t = trace_list.pop()
         move(direction.turn_back(t[KEY_TRACE_DIR]))
-        drone_pos = (get_pos_x() + 1, get_pos_y() + 1)
+        drone_pos = get_current_coordinate(base_pos)
 
         shortcut_dir = None
         shortcut_dist = MAX_DIST
 
-        tmp_treasure = measure()
-        if tmp_treasure == None or (tmp_treasure[0] + 1, tmp_treasure[1] + 1) != treasure_pos:
+        tmp_treasure = get_treasure_coordinate(base_pos)
+        if tmp_treasure == None or tmp_treasure != treasure_pos:
             return False
 
         # 壁の状況を調べて、ショートカットできるかも調べる
         for dir in direction.Directions:
             if can_move(dir) and not edge_list[drone_pos][dir]: # 空いてなかった壁が開いている
-                next_pos = vector2tuple(get_next_pos(drone_pos,dir))
+                next_pos = get_next_pos(drone_pos,dir)
 
                 edge_list[drone_pos][dir] = True
                 edge_list[next_pos][direction.turn_back(dir)] = True
@@ -261,27 +266,12 @@ def hunting(edge_list, have_to_spawn, max_try_cnt, substance):
 
     return True
 
-def subdrone_hunting(edge_list, first_treasure, max_try_cnt, substance):
-    while True:
-        tmp_treasure = measure()
-        if tmp_treasure == None:
-            return
-        elif first_treasure != tmp_treasure:
-            break
-        else:
-            pass
-
-    for try_cnt in range(max_try_cnt):
-        is_found_treasure = hunting(edge_list, substance, max_try_cnt, substance)
-        if is_found_treasure:
-            use_item(Items.Weird_Substance, substance)
-
-def treasure_hunt(x, y, w, h):
+def treasure_hunt(x, y, w, h, has_to_spawn = True, gold_limit = None, max_try_cnt = 299):
     substance = w * 2**(num_unlocked(Unlocks.Mazes) - 1)
 
     # マップ作り
     dist_list, edge_list = create_list_dist_edge(w,h)
-    tmp_dist_list, tmp_edge_list = research_map(None, 0, w, h)
+    tmp_dist_list, tmp_edge_list = research_map(None, 0, w, h, has_to_spawn, (x, y))
     for pos in tmp_dist_list:
         dist_list[pos] = tmp_dist_list[pos]
 
@@ -290,36 +280,35 @@ def treasure_hunt(x, y, w, h):
             if tmp_edge_list[pos][dir]:
                 set_edge(edge_list, pos, dir)
 
-    max_try_cnt = 299
     is_found_treasure = True
     for try_cnt in range(max_try_cnt+1):
-        have_to_spawn = (try_cnt < max_try_cnt - 10) and is_found_treasure
-        is_found_treasure = hunting(edge_list, have_to_spawn, 10, substance)
+        have_to_spawn = (try_cnt < max_try_cnt - 10) and is_found_treasure and has_to_spawn
+        is_found_treasure = hunting(edge_list, have_to_spawn, 10, substance, (x, y))
 
         if is_found_treasure:
-            if try_cnt < max_try_cnt:
+            if try_cnt < max_try_cnt and (gold_limit == None or num_items(Items.Gold) < (gold_limit - (try_cnt+1) * substance)):
                 use_item(Items.Weird_Substance, substance)
 
             else:
                 harvest()
-                print("Finish!!!!!", try_cnt)
+                quick_print("Finish!!!!!", try_cnt)
                 break
     
 
 def main_loop():
     treasure_hunt(0, 0, get_world_size(), get_world_size())
     
-def init():
-    clear()
-    
-    moves.move_to(0, 0)
+def init(x, y, w):
+    moves.move_to(x + w // 2, y + w // 2)
         
     plant(Entities.Bush)    
-    substance = get_world_size() * 2**(num_unlocked(Unlocks.Mazes) - 1)
+    substance = w * 2**(num_unlocked(Unlocks.Mazes) - 1)
     use_item(Items.Weird_Substance, substance)
             
 if __name__ == "__main__":
     while True:
-        init()
+        clear()
+
+        init(0, 0, get_world_size())
         main_loop()
     

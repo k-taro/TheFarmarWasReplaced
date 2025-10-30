@@ -140,7 +140,7 @@ def init():
 if __name__ == "__main__":
     while True:
         init()
-        change_hat(Hats.Traffic_Cone)    
+#        change_hat(Hats.Traffic_Cone)    
         maze_strategy_init()
         main_loop()
     
