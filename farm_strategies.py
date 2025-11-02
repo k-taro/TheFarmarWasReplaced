@@ -29,7 +29,7 @@ def preparation(ent, force = False):
 
     operations.use_water_if_dry()
 
-def harvest_poly(start_x, start_y, width, height):
+def harvest_poly(start_x, start_y, width, height, weight = {Entities.Carrot:1, Entities.Bush:1, Entities.Tree:1, Entities.Grass:1}):
     vote_before = []
     vote_after = []
 
@@ -105,9 +105,9 @@ def harvest_poly(start_x, start_y, width, height):
                     vote_x -= start_x
                     vote_y -= start_y
                     if (vote_x < x_index) or ((vote_x == x_index) and (vote_y < y_index)):
-                        vote_before[vote_x][vote_y][vote_ent] += 1
+                        vote_before[vote_x][vote_y][vote_ent] += weight[max_ent]
                     else:
-                        vote_after[vote_x][vote_y][vote_ent] += 1
+                        vote_after[vote_x][vote_y][vote_ent] += weight[max_ent]
 
             move(North)
 
