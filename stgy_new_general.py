@@ -19,6 +19,36 @@ AREA_CONF = [
 #    {Entities:Entities.Sunflower, KEY_POS:[24,30,8,2]},
 ]
 
+AREA_PUMPKIN = [
+    {Entities:Entities.Pumpkin, KEY_POS:[0,0,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[7,0,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[14,0,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[21,0,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[28,0,4,4]},
+    {Entities:Entities.Pumpkin, KEY_POS:[0,7,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[7,7,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[14,7,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[21,7,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[28,7,4,4]},
+    {Entities:Entities.Pumpkin, KEY_POS:[0,14,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[7,14,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[14,14,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[21,14,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[28,14,4,4]},
+    {Entities:Entities.Pumpkin, KEY_POS:[0,21,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[7,21,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[14,21,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[21,21,6,6]},
+    {Entities:Entities.Pumpkin, KEY_POS:[28,21,4,4]},
+    {Entities:Entities.Pumpkin, KEY_POS:[0,28,4,4]},
+    {Entities:Entities.Pumpkin, KEY_POS:[5,28,4,4]},
+    {Entities:Entities.Pumpkin, KEY_POS:[10,28,4,4]},
+    {Entities:Entities.Pumpkin, KEY_POS:[15,28,4,4]},
+    {Entities:Entities.Pumpkin, KEY_POS:[20,28,4,4]},
+    {Entities:Entities.Pumpkin, KEY_POS:[25,28,4,4]},
+]
+
+
 AREA_FLOWER = [24,30,8,2]
 
 AREA_POLY = [
@@ -41,18 +71,28 @@ def wrap_preparation(context):
 
     return context
 
-def wrap_main_loop():
-    main_loop(nop)
+def pumpkin_condition():
+    return num_items(Items.Pumpkin) >= 200000000
 
-def main_loop(g):
+def wrap_main_loop():
+    main_loop(nop, pumpkin_condition)
+
+def ret_false():
+    return False
+
+def main_loop(g, condition = ret_false):
     cactus_ctxt = {
             KEY_POS:[0, 0, 0, 0], 
             farm_strategies.KEY_COUNT_CAN_HARVEST:True,
             farm_strategies.KEY_IS_NO_SORT:True,
         }
+    
+    AREA_CONF = AREA_PUMPKIN
 
-#    while True:
     for conf in AREA_CONF:
+        if condition():
+            return
+        
         ent = conf[Entities]
         x,y,w,h = conf[KEY_POS]
 
@@ -65,12 +105,6 @@ def main_loop(g):
             cactus_ctxt[KEY_POS] = conf[KEY_POS]
             operations.do_in_area(harvest_cactus, w, h, cactus_ctxt, operations.ORDER_COLUMN_MAJOR)
 
-        # elif ent == Entities.Sunflower:
-        #     pos = conf[KEY_POS]
-        #     moves.move_to(pos[0], pos[1])
-        #     farm_strategies.harvest_sunflower_mod({KEY_POS:pos})
-        #     operations.do_in_area(farm_strategies.harvest_sunflower_mod, w, h, {KEY_POS:conf[KEY_POS]})
-
         else:
             operations.do_in_area(harvest_if_can, w, h, {Entities:ent})
 
@@ -78,17 +112,6 @@ def main_loop(g):
 
             
 if __name__ == "__main__":
-    # spawn_drone(wrap_main_loop)
-
-    # for i in range(3):
-    #     do_a_flip()
-
-    # main_loop(nop)
-
-    # while True:
-    #     farm_strategies.harvest_sunflower_mod({farm_strategies.KEY_POS:[11, 0, 1, 12]})
-    #     spawn_drone(wrap_main_loop)
-
     def harv_flower():
         while True:
             moves.move_to(AREA_FLOWER[0], AREA_FLOWER[1])
@@ -98,11 +121,16 @@ if __name__ == "__main__":
                 AREA_FLOWER[3], 
                 {Entities:Entities.Sunflower}
             )
-    moves.move_to(AREA_FLOWER[0], AREA_FLOWER[1])
-    spawn_drone(harv_flower)
+
+    AREA_FLOWER = None
+
+    if AREA_FLOWER != None:
+        moves.move_to(AREA_FLOWER[0], AREA_FLOWER[1])
+        spawn_drone(harv_flower)
 
     diff_tick = 60000
 
+    AREA_POLY = []
     for area in AREA_POLY:
         def harv_poly():
             while True:
@@ -115,7 +143,7 @@ if __name__ == "__main__":
 
     base_drone_nums = num_drones()
 
-    while True:
+    while not pumpkin_condition():
         first_drone_handler = spawn_drone(wrap_main_loop)
         first_drone_tick = get_tick_count()
         start_tick = first_drone_tick
