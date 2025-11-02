@@ -9,11 +9,11 @@ KEY_IS_NO_SORT = "KEY_IS_NO_SORT"
 KEY_POS = "KEY_POS"
 KEY_FLOWER_INFO = "KEY_FLOWER_INFO"
 
-def preparation(ent):
+def preparation(ent, force = False):
     if (item_conf.is_need_till(ent)) == (get_ground_type() == Grounds.Grassland):
         till()
 
-    if ent == Entities.Tree:
+    if ent == Entities.Tree and not force:
         if (get_pos_x() % 2) == (get_pos_y() % 2):
             plant(Entities.Tree)
             # if num_items(Items.Fertilizer) > 0:

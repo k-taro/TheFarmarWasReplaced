@@ -3,7 +3,24 @@ dir_opposite = {
     West:East,
     South:North,
     East:West}
+
+def pick_random(tpl_option):
+    if len(tpl_option) == 0:
+        return
     
+    r = random()
+    r *= len(tpl_option)
+
+    ret = tpl_option[-1]
+
+    for i in range(len(tpl_option)):
+        if r < i+1:
+            ret = tpl_option[i]
+            break
+
+    return ret
+
+
 def get_full_unlock_dict():
     unlock_dict = {}
     for ul in Unlocks:
