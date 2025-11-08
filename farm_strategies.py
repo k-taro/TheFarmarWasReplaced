@@ -10,6 +10,7 @@ KEY_POS = "KEY_POS"
 KEY_FLOWER_INFO = "KEY_FLOWER_INFO"
 
 def preparation(ent, force = False):
+    harvest()
     if (item_conf.is_need_till(ent)) == (get_ground_type() == Grounds.Grassland):
         till()
 
@@ -21,10 +22,7 @@ def preparation(ent, force = False):
         else:
             plant(Entities.Bush)
     
-    elif ent == Entities.Grass:
-        harvest()
-        
-    else:
+    elif ent != Entities.Grass:
         plant(ent)
 
     operations.use_water_if_dry()
