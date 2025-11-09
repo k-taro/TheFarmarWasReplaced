@@ -3,7 +3,7 @@ import moves
 
 GOLD_LIMIT = 9863168
 
-def hunting(pos, size, wait_cnt):
+def hunting(pos, size, wait_cnt, amount):
     moves.move_to(pos[0], pos[1])
     max_try_cnt = 299
     if size == 6:
@@ -12,21 +12,21 @@ def hunting(pos, size, wait_cnt):
     for i in range(wait_cnt):
         pass
 
-    while num_items(Items.Gold) < GOLD_LIMIT:
+    while num_items(Items.Gold) < amount:
         treasure_over_hunt.init(pos[0], pos[1], size)
         treasure_over_hunt.treasure_hunt(pos[0], pos[1], size, size, False, GOLD_LIMIT, max_try_cnt)
         if size == 6:
-            if num_items(Items.Gold) < GOLD_LIMIT * 0.7:
+            if num_items(Items.Gold) < amount * 0.7:
                 max_try_cnt = 20
                 size = 5
             else:
                 break
         else:
-            if num_items(Items.Gold) < GOLD_LIMIT * 0.2:
+            if num_items(Items.Gold) < amount * 0.2:
                 max_try_cnt = 80
-            elif num_items(Items.Gold) < GOLD_LIMIT * 0.4:
+            elif num_items(Items.Gold) < amount * 0.4:
                 max_try_cnt = 40
-            elif num_items(Items.Gold) < GOLD_LIMIT * 0.8:
+            elif num_items(Items.Gold) < amount * 0.8:
                 max_try_cnt = 20
             else:
                 max_try_cnt = 5
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         pos = (base_x, base_y + i * size)
 
         def wrap():
-            hunting(pos, size, max_tick - single_tick * len(drone))
+            hunting(pos, size, max_tick - single_tick * len(drone), GOLD_LIMIT)
 
         d = spawn_drone(wrap)
         if d != None:
@@ -58,7 +58,7 @@ if __name__ == "__main__":
             pos = (base_x + i * size, base_y + j * size)
 
             def wrap():
-                hunting(pos, size, max_tick - single_tick * len(drone))
+                hunting(pos, size, max_tick - single_tick * len(drone), GOLD_LIMIT)
 
             d = spawn_drone(wrap)
             if d != None:
@@ -74,7 +74,7 @@ if __name__ == "__main__":
             pos = (base_x + i * size, base_y + j * size)
 
             def wrap():
-                hunting(pos, size, max_tick - single_tick * len(drone))
+                hunting(pos, size, max_tick - single_tick * len(drone), GOLD_LIMIT)
 
             d = spawn_drone(wrap)
             if d != None:

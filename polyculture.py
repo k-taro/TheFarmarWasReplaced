@@ -186,7 +186,7 @@ def multi_polyculture(item, amount, area):
         h = spawn_drone(drone_operation)
         drone_list.append(h)
 
-        for _ in range(get_world_size() * 1000 / drone_num):
+        for _ in range(area[2] * area[3] * 10 // drone_num):
             pass
 
     poly_farm(area[0], area[1], area[2], area[3], item, amount)

@@ -36,7 +36,7 @@ def move_to_without_warp(x, y):
 
 def move_to(x, y):
     now_pos = [get_pos_x(), get_pos_y()]
-    target = [x, y]
+    target = [x%get_world_size(), y%get_world_size()]
 
     dir_x = East
     dir_y = North

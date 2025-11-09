@@ -6,9 +6,9 @@ def to_north():
         harvest()
         move(North)
 
-def cactus_sort(dir):
+def cactus_sort(dir, length):
     start_pos = (get_pos_x(), get_pos_y())
-    sorted_index = get_world_size()
+    sorted_index = length
 
     while sorted_index > 0:
         tmp_sorted = 0
@@ -39,14 +39,16 @@ def main(x, y, w):
     moves.move_to(x,y)
 
     def cn():
+        y = get_pos_y()
         for _ in range(div):
-            cactus_sort(North)
-            move(East)
+            cactus_sort(North, w)
+            moves.move_to(get_pos_x()+1, y)
 
     def ce():
+        x = get_pos_x()
         for _ in range(div):
-            cactus_sort(East)
-            move(North)
+            cactus_sort(East, w)
+            moves.move_to(x, get_pos_y()+1)
         
     for pos_x in range(0, w-div, div):
         while num_drones() >= max_drones():
@@ -58,9 +60,7 @@ def main(x, y, w):
         for _ in range(div):
             move(East)
 
-    for _ in range(div):
-        cactus_sort(North)
-        move(East)
+    cn()
 
     for i in drone_list:
         wait_for(i)
@@ -78,9 +78,7 @@ def main(x, y, w):
         for _ in range(div):
             move(South)
 
-    for _ in range(div):
-        cactus_sort(East)
-        move(North)
+    ce()
 
     for i in drone_list:
         wait_for(i)
