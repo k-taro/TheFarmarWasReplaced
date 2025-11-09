@@ -1,9 +1,7 @@
-import collections
 import moves
-import utils
 import direction
-import vector
 from vector import vector2tuple
+import farm_strategies
 
 MAX_DIST = 10000
 KEY_TRACE_POS = "KEY_TRACE_POS"
@@ -300,8 +298,8 @@ def main_loop():
     
 def init(x, y, w):
     moves.move_to(x + w // 2, y + w // 2)
-        
-    plant(Entities.Bush)    
+    
+    farm_strategies.preparation(Entities.Bush, True, False)
     substance = w * 2**(num_unlocked(Unlocks.Mazes) - 1)
     use_item(Items.Weird_Substance, substance)
             

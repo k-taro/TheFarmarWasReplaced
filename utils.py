@@ -54,3 +54,30 @@ def max_index(l, comp):
             max_index = i
 
     return max_index
+
+def wrap_has_enough_items(item, amount):
+    def f():
+        return num_items(item) >= amount
+    
+    return f
+
+def wrap_proc(f, arg):
+    def g():
+        return f(arg)
+    return g
+
+i2e_dict = {
+    Items.Bone:None,
+    Items.Cactus:Entities.Cactus,
+    Items.Carrot:Entities.Carrot,
+    Items.Fertilizer:None,
+    Items.Gold:None,
+    Items.Hay:Entities.Grass,
+    Items.Power:Entities.Sunflower,
+    Items.Pumpkin:Entities.Pumpkin,
+    Items.Water:None,
+    Items.Weird_Substance:None,
+    Items.Wood:Entities.Tree,
+}
+def item2ent(item):
+    return i2e_dict[item]
