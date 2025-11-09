@@ -115,8 +115,8 @@ def do_unlock(target_unlock):
                 continue
 
             if num_unlocked(Unlocks.Sunflowers) > 0 and num_items(Items.Power) < power_limit:
-                farm_strategies.farm_single_plant(Items.Power, 2 * power_limit , area)
-            farm_strategies.farm_single_plant(item,amount,area)
+                farm_strategies.farm_multi_plant(Items.Power, 2 * power_limit , area)
+            farm_strategies.farm_multi_plant(item,amount,area)
 
     return unlock(target_unlock)
 

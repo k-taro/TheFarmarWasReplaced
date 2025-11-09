@@ -1,34 +1,26 @@
-import item_conf
 import moves
 from moves import move_to
 import operations
+from operations import preparation
 import utils
 import flower_info
+import leaderboard_maze
 import treasure_over_hunt
 import Apple_hunt_dinosaur
+import polyculture
+import cactus_only
 
 KEY_COUNT_CAN_HARVEST = "KEY_COUNT_CAN_HARVEST"
 KEY_IS_NO_SORT = "KEY_IS_NO_SORT"
 KEY_POS = "KEY_POS"
 KEY_FLOWER_INFO = "KEY_FLOWER_INFO"
 
-def preparation(ent, force = False, use_fertilizer = False):
-    harvest()
-    if (item_conf.is_need_till(ent)) == (get_ground_type() == Grounds.Grassland):
-        till()
-
-    if ent == Entities.Tree and not force:
-        if (get_pos_x() % 2) == (get_pos_y() % 2):
-            plant(Entities.Tree)
-        else:
-            plant(Entities.Bush)
-    
-    elif ent != Entities.Grass:
-        plant(ent)
-
-    operations.use_water_if_dry()
-    if use_fertilizer and num_items(Items.Fertilizer) > 0:
-        use_item(Items.Fertilizer)
+POLY_PLANT = (
+    Entities.Carrot,
+    Entities.Bush,
+    Entities.Tree,
+    Entities.Grass,
+)
 
 def harvest_horiz_stripe(start_x, start_y, width, height, item, amount):
     use_fertilizer = (item == Items.Weird_Substance)
@@ -62,107 +54,6 @@ def harvest_horiz_stripe(start_x, start_y, width, height, item, amount):
             move(East)
 
         move_to(start_x, start_y)
-
-
-def harvest_poly(start_x, start_y, width, height, weight = {Entities.Carrot:1, Entities.Bush:1, Entities.Tree:1, Entities.Grass:1}, item = None, amount = 999999999999999):
-    vote_before = []
-    vote_after = []
-
-    for x in range(width):
-        vote_before.append([])
-        vote_after.append([])
-        for y in range(height):
-            vote_after[x].append({
-                Entities.Carrot:0,
-                Entities.Bush:0,
-                Entities.Tree:0,
-                Entities.Grass:0,
-            })
-            vote_before[x].append({
-                Entities.Carrot:0,
-                Entities.Bush:0,
-                Entities.Tree:0,
-                Entities.Grass:0,
-            })
-
-    for x_index in range(width):
-        for y_index in range(height):
-            max_ent = None
-            max_vote = 0
-
-            # 植える植物を投票数で決める
-            for ent in [Entities.Carrot, Entities.Bush, Entities.Tree, Entities.Grass]:
-                vote = vote_before[x][y][ent]
-                vote += vote_after[x][y][ent]
-
-                if vote > max_vote:
-                    max_vote = vote
-                    max_ent = ent
-
-            if max_ent == None:
-                r = random()
-
-                if r < 0.25:
-                    max_ent = Entities.Carrot
-                elif r < 0.5:
-                    max_ent = Entities.Bush
-                elif r < 0.75:
-                    max_ent = Entities.Tree
-                else:
-                    max_ent = Entities.Grass
-
-            # 投票済みの票を回収
-            companion = get_companion()
-            if companion != None:
-                vote_ent = companion[0]
-                vote_x, vote_y = companion[1]
-
-                if (start_x < vote_x) and (vote_x < (start_x + width)) and (start_y < vote_y) and (vote_y < (start_y + height)):
-                    vote_x -= start_x
-                    vote_y -= start_y
-                    if (vote_x < x_index) or ((vote_x == x_index) and (vote_y < y_index)):
-                        vote_before[vote_x][vote_y][vote_ent] -= 1
-                    else:
-                        vote_after[vote_x][vote_y][vote_ent] -= 1
-
-                    while not can_harvest():
-                        pass
-
-            harvest()
-            if item != None and num_items(item) >= amount:
-                if item == Items.Weird_Substance:
-                    clear()
-                return
-            if max_ent == Entities.Carrot:
-                cost = get_cost(Entities.Carrot)
-                for e in cost:
-                    if num_items(e) < cost[e]:
-                        max_ent = e
-
-            preparation(max_ent, False, item == Items.Weird_Substance)
-
-            # 投票
-            companion = get_companion()
-            if companion != None:
-                vote_ent = companion[0]
-                vote_x, vote_y = companion[1]
-                if (start_x < vote_x) and (vote_x < (start_x + width)) and (start_y < vote_y) and (vote_y < (start_y + height)):
-                    vote_x -= start_x
-                    vote_y -= start_y
-                    if (vote_x < x_index) or ((vote_x == x_index) and (vote_y < y_index)):
-                        vote_before[vote_x][vote_y][vote_ent] += weight[max_ent]
-                    else:
-                        vote_after[vote_x][vote_y][vote_ent] += weight[max_ent]
-
-            move(North)
-
-        for i in range(height):
-            move(South)
-
-        move(East)
-
-    for i in range(width):
-        move(West)
 
 
 def sort_south_west(o_x, o_y):
@@ -278,7 +169,7 @@ def farm_pumpkin(amount, start_x, start_y, w):
     while True:
         moves.move_to(start_x, start_y)
         if num_items(Items.Carrot) <= carrot_amount:
-            farm_single_plant(Items.Carrot, 5 * carrot_amount, (start_x, start_y, w, w))
+            farm_multi_plant(Items.Carrot, 5 * carrot_amount, (start_x, start_y, w, w))
 
         is_less_carrot = False
 
@@ -312,6 +203,68 @@ def farm_pumpkin(amount, start_x, start_y, w):
             moves.move_to(start_x+pos_x, start_y)
             move(East)
 
+def mult_famr_pumpkin(item, amount, area):
+    drone_list = []
+    pumpkin_area = [
+        # {Entities:Entities.Pumpkin, KEY_POS:[0,0,6,6]}, # sample
+    ]
+
+    x_pos = area[0]
+    while x_pos < area[2]:
+        y_pos = area[1]
+        remain_x = area[2] - x_pos
+        while y_pos < area[3]:
+            remain_y = area[3] - y_pos
+
+            size = min(remain_y, 6)
+            size = min(size, remain_x) # y側の余白が小さかった場合、x側でさらに枠を確保できるかもしれないが省略
+
+            tmp_area = (x_pos, y_pos, size, size)
+            pumpkin_area.append({Entities:Entities.Pumpkin, KEY_POS:tmp_area})
+
+            y_pos += size + 1
+
+        x_pos += min(remain_x, 6) + 1
+
+    num_area = len(pumpkin_area) // max_drones()
+
+    while num_items(item) < amount:
+        if num_items(Items.Carrot) < get_cost(Entities.Pumpkin)[Items.Carrot] * area[2] * area[3]:
+            farm_multi_plant(Items.Carrot, amount, area)
+
+        for drone_index in range(max_drones()-1):
+            def f():
+                while num_items(item) < amount:
+                    if num_items(Items.Carrot) < get_cost(Entities.Pumpkin)[Items.Carrot] * area[2] * area[3]:
+                        return
+
+                    for conf_index in range(drone_index * num_area, (drone_index+1)*num_area):
+                        conf  = pumpkin_area[conf_index]
+                        pos = conf[KEY_POS]
+                        move_to(pos[0], pos[1])
+                        operations.do_in_area(harvest_pumpkin, pos[2], pos[3], {KEY_POS:conf[KEY_POS], KEY_COUNT_CAN_HARVEST:0})
+
+            h = spawn_drone(f)
+            drone_list.append(h)
+
+        drone_index = max_drones()-1
+        def f():
+            while num_items(item) < amount:
+                if num_items(Items.Carrot) < get_cost(Entities.Pumpkin)[Items.Carrot] * area[2] * area[3]:
+                    return
+
+                for conf_index in range(drone_index * num_area, len(pumpkin_area)):
+                    conf  = pumpkin_area[conf_index]
+                    pos = conf[KEY_POS]
+                    move_to(pos[0], pos[1])
+                    operations.do_in_area(harvest_pumpkin, pos[2], pos[3], {KEY_POS:conf[KEY_POS], KEY_COUNT_CAN_HARVEST:0})
+
+        f()
+
+        for h in drone_list:
+            wait_for(h)
+
+
 def harvest_if_can(context):
     ent = context[Entities]
 
@@ -343,20 +296,16 @@ def harvest_all(area):
     move_to(area[0],area[1])
     operations.do_in_area(harvest_if_can,area[2],area[3],{Entities:Entities.Grass})
 
-def farm_single_plant(item, amount, area):
+
+def farm_multi_plant(item, amount, area):
     ent = utils.item2ent(item)
+    drone_list = []
     weight = {
         Entities.Carrot:1,
         Entities.Bush:1,
         Entities.Tree:1,
         Entities.Grass:1,
     }
-    POLY_PLANT = (
-        Entities.Carrot,
-        Entities.Bush,
-        Entities.Tree,
-        Entities.Grass,
-    )
 
     strategy = None
 
@@ -385,7 +334,12 @@ def farm_single_plant(item, amount, area):
     while num_items(item)<amount:
         if strategy == None:
             if num_unlocked(Unlocks.Polyculture) > 0:
-                harvest_poly(area[0],area[1],area[2],area[3],weight,item, amount)
+                if max_drones() > 2:
+                    polyculture.multi_polyculture(item, amount, area)
+
+                else:
+                    polyculture.single_polyculture(area[0],area[1],area[2],area[3],weight,item, amount)
+
             else:
                 harvest_horiz_stripe(area[0],area[1],area[2],area[3],item,amount)
 
@@ -393,33 +347,80 @@ def farm_single_plant(item, amount, area):
             move_to(area[0], area[1])
             carrot_limit = 2 * area[2] * area[3] * get_cost(Entities.Sunflower)[Items.Carrot]
             if num_items(Items.Carrot) < carrot_limit:
-                farm_single_plant(Items.Carrot, max(amount, carrot_limit), area)
+                farm_multi_plant(Items.Carrot, max(amount, carrot_limit), area)
+
+            w = area[2] // max_drones()
+            h = area[3] // max_drones()
+            y = area[1]
+
+            for i in range(max_drones()-1):
+                x = area[0] + area[2] - (i+1) * w
+                move_to(x,y)
+                def f():
+                    operations.do_in_area(harvest_if_can, w, h, {Entities:ent})
+
+                h_drone = spawn_drone(f)
+                drone_list.append(h_drone)
+
+            move_to(area[0], area[1])
             operations.do_in_area(harvest_if_can, area[2], area[3], {Entities:ent})
 
+            for h_drone in drone_list:
+                wait_for(h_drone)
+
         elif strategy == Leaderboards.Pumpkins:
-            farm_pumpkin(amount, area[0], area[1], min(area[2], area[3]))
+            mult_famr_pumpkin(item, amount, area)
         
         elif strategy == Leaderboards.Cactus:
-            cactus_ctxt = {
-                    KEY_POS:area, 
-                    KEY_COUNT_CAN_HARVEST:True,
-                    KEY_IS_NO_SORT:True,
-                }
             pumpkin_amount = 2 * (min(area[2] , area[3]) ** 2) * get_cost(Entities.Cactus)[Items.Pumpkin]
             if num_items(Items.Pumpkin) < pumpkin_amount:
-                farm_single_plant(Items.Pumpkin, pumpkin_amount, area)
+                farm_multi_plant(Items.Pumpkin, pumpkin_amount, area)
             move_to(area[0], area[1])
-            operations.do_in_area(harvest_cactus, area[2], area[3], cactus_ctxt, operations.ORDER_COLUMN_MAJOR)
+            cactus_only.main(area[0], area[1], min(area[2], area[3]))
 
         elif strategy == Leaderboards.Maze:
-            size = min(area[2], area[3])
-            substance = amount + (size * 2**(num_unlocked(Unlocks.Mazes) - 1))
-            farm_single_plant(Items.Weird_Substance, substance,area)
+            # area は正方形であることを前提とする
+            length = min(area[2], area[3])
+            substance = amount + (length * 2**(num_unlocked(Unlocks.Mazes) - 1))
+            farm_multi_plant(Items.Weird_Substance, substance,area)
             harvest_all(area)
-            treasure_over_hunt.init(area[0], area[1], size)
-            treasure_over_hunt.treasure_hunt(area[0], area[1], size, size, False, amount)
+            drone_list = []
+            if num_unlocked(Unlocks.Megafarm) < 2:
+                # 2台以下なら手分けしづらいので1台で探索する
+                treasure_over_hunt.init(area[0], area[1], length)
+                treasure_over_hunt.treasure_hunt(area[0], area[1], length, length, False, amount)
+            else:
+                # 4or16台ならちょうどよく分割できる
+                div = 2
+                # 8台は4台へ丸める。32台は16台に丸める
+                if num_unlocked(Unlocks.Megafarm) > 2:
+                    div = 4
+
+                single_length = length // div
+                single_tick = 500
+                max_tick = div*div*single_tick
+
+                l = []
+                for i in range(div):
+                    for j in range(div):
+                        if i == 0 and j == 0:
+                            continue
+
+                        pos = (area[0]+i*single_length,area[1]+j*single_length)
+                        def f():
+                            leaderboard_maze.hunting(pos, single_length, max_tick - single_tick * len(drone_list))
+
+                        h_drone = spawn_drone(f)
+                        drone_list.append(h_drone)
+
+                while num_items(item) < amount:
+                    treasure_over_hunt.init(area[0], area[1], single_length)
+                    treasure_over_hunt.treasure_hunt(area[0], area[1], single_length, single_length, False, amount)
 
         elif strategy == Leaderboards.Dinosaur:
+            cactus_amount = get_cost(Entities.Apple)[Items.Cactus] * area[2] * area[3]
+            farm_multi_plant(Items.Cactus, cactus_amount, area)
+
             Apple_hunt_dinosaur.init()
             target_x, target_y = measure()
             target = (target_x, target_y)

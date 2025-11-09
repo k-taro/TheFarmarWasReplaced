@@ -1,6 +1,8 @@
 import farm_strategies
-from farm_strategies import harvest_cactus, harvest_if_can, harvest_pumpkin, preparation, KEY_POS
+from farm_strategies import harvest_cactus, harvest_if_can, harvest_pumpkin, KEY_POS
 import operations
+from operations import preparation
+import polyculture
 import utils
 import moves
 from utils import nop
@@ -106,7 +108,7 @@ if __name__ == "__main__":
     for area in AREA_POLY:
         def harv_poly():
             while True:
-                farm_strategies.harvest_poly(area[0], area[1], area[2], area[3])
+                polyculture.single_polyculture(area[0], area[1], area[2], area[3])
 
         moves.move_to(area[0], area[1])
         spawn_drone(harv_poly)

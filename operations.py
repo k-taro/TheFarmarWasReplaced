@@ -1,3 +1,5 @@
+import item_conf
+import operations
 import utils
 
 ORDER_ZIGZAG = "ORDER_ZIGZAG"
@@ -48,3 +50,22 @@ def wrap_ope(f, arg):
         return context
 
     return ope
+
+
+def preparation(ent, force = False, use_fertilizer = False):
+    harvest()
+    if (item_conf.is_need_till(ent)) == (get_ground_type() == Grounds.Grassland):
+        till()
+
+    if ent == Entities.Tree and not force:
+        if (get_pos_x() % 2) == (get_pos_y() % 2):
+            plant(Entities.Tree)
+        else:
+            plant(Entities.Bush)
+
+    elif ent != Entities.Grass:
+        plant(ent)
+
+    operations.use_water_if_dry()
+    if use_fertilizer and num_items(Items.Fertilizer) > 0:
+        use_item(Items.Fertilizer)

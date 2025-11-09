@@ -1,5 +1,5 @@
 import moves
-import farm_strategies
+import operations
 import direction
 
 def swap_swap(start_timing, size, dir):
@@ -25,7 +25,7 @@ def swap_swap(start_timing, size, dir):
 
 def plant_cuctas():
     for _ in range(get_world_size()):
-        farm_strategies.preparation(Entities.Cactus)
+        operations.preparation(Entities.Cactus)
         move(North)
 
 

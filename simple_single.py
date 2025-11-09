@@ -14,4 +14,4 @@ CONDITION = {
 }
 
 if __name__ == "__main__":
-    farm_strategies.farm_single_plant(CONDITION[TARGET][1], CONDITION[TARGET][2], (0,0,get_world_size(),get_world_size()))
+    farm_strategies.farm_multi_plant(CONDITION[TARGET][1], CONDITION[TARGET][2], (0,0,get_world_size(),get_world_size()))
