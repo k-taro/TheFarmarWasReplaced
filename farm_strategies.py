@@ -1,5 +1,6 @@
 import item_conf
 import moves
+from moves import move_to
 import operations
 import utils
 import flower_info
@@ -246,3 +247,22 @@ def wait_and_harvest(context):
         preparation(ent)
 
     return context
+
+def farm_single_plant(ent, item, amount, area):
+    move_to(area[0], area[1])
+
+    weight = {
+        Entities.Carrot:1,
+        Entities.Bush:1,
+        Entities.Tree:1,
+        Entities.Grass:1,
+    }
+
+    weight[ent] = 1
+    while num_items(item)<amount:
+        if ent == Entities.Sunflower:
+            harvest_poly(area[0],area[1],area[3],area[4])
+        else:
+            move_to(area[0], area[1])
+            operations.do_in_area(harvest_if_can, area[3], area[4], {Entities:ent})
+

@@ -37,3 +37,14 @@ def do_in_area(g, width, height, context, order = ORDER_ZIGZAG):
                     move(utils.dir_opposite[dir_y])
 
     return context
+
+# do_in_area に渡す関数を作る関数
+# 前提条件: f は引数1つで、処理を終了したいときにTrueを返す関数
+def wrap_ope(f, arg):
+    def ope(context):
+        ret = f(arg)
+        if ret:
+            context[KEY_ABORT] = True
+        return context
+
+    return ope

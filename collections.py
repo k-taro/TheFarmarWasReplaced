@@ -1,10 +1,5 @@
 def is_conntain(list, item):
-    ret = False
-    for i in list:
-        if(i == item):
-            ret = True
-
-    return ret
+    return item in list
 
 
 def sorted_index(data):
